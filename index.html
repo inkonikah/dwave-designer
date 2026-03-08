@@ -2,41 +2,55 @@
 <html>
 <head>
 <title>DWave Designer</title>
+
 <style>
-body {
-font-family: Arial;
-margin: 40px;
+
+body{
+font-family:Arial;
+margin:40px;
 }
 
-.container {
-display: flex;
-gap: 40px;
+.container{
+display:flex;
+gap:40px;
 }
 
-.left {
-width: 300px;
+.left{
+width:300px;
 }
 
-.right {
-flex: 1;
-border: 1px solid #ccc;
-height: 500px;
-display: flex;
-align-items: center;
-justify-content: center;
+.right{
+flex:1;
+border:1px solid #ccc;
+height:500px;
+padding:20px;
 }
 
-input, select {
-width: 100%;
-margin-bottom: 10px;
-padding: 6px;
+input,select{
+width:100%;
+margin-bottom:10px;
+padding:6px;
 }
 
-button {
-padding: 10px;
-width: 100%;
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
 }
+
+.room{
+width:120px;
+height:80px;
+border:2px solid black;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+margin:10px;
+font-weight:bold;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -51,6 +65,7 @@ width: 100%;
 <input type="file">
 
 <h3>Studio Type</h3>
+
 <select>
 <option>Post Production Studio</option>
 <option>Recording Studio</option>
@@ -75,18 +90,17 @@ Office
 Machine Room
 <input type="number" value="1">
 
-<button>Generate Layout</button>
+<button id="generate">Generate Layout</button>
 
 </div>
 
-<div class="right">
+<div class="right" id="layout">
 2D Layout will appear here
 </div>
 
 </div>
-86  </div>
 
-87  <script>
+<script>
 
 document.getElementById("generate").onclick=function(){
 
@@ -98,23 +112,14 @@ const edit=inputs[2].value
 const office=inputs[3].value
 const machine=inputs[4].value
 
-const layout=document.querySelector(".right")
+const layout=document.getElementById("layout")
 
 layout.innerHTML=""
 
 function room(name){
 
 const div=document.createElement("div")
-
-div.style.width="120px"
-div.style.height="80px"
-div.style.border="2px solid black"
-div.style.display="inline-flex"
-div.style.alignItems="center"
-div.style.justifyContent="center"
-div.style.margin="10px"
-div.style.fontWeight="bold"
-
+div.className="room"
 div.innerText=name
 
 layout.appendChild(div)
@@ -131,5 +136,5 @@ for(let i=0;i<machine;i++) room("MACHINE")
 
 </script>
 
-88  </body>
-89  </html>
+</body>
+</html>
