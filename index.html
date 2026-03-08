@@ -2,9 +2,88 @@
 <html>
 <head>
 <title>DWave Designer</title>
+<style>
+body {
+font-family: Arial;
+margin: 40px;
+}
+
+.container {
+display: flex;
+gap: 40px;
+}
+
+.left {
+width: 300px;
+}
+
+.right {
+flex: 1;
+border: 1px solid #ccc;
+height: 500px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+input, select {
+width: 100%;
+margin-bottom: 10px;
+padding: 6px;
+}
+
+button {
+padding: 10px;
+width: 100%;
+}
+</style>
 </head>
+
 <body>
+
 <h1>DWave Designer</h1>
-<p>Site is live.</p>
+
+<div class="container">
+
+<div class="left">
+
+<h3>Studio Plan Upload</h3>
+<input type="file">
+
+<h3>Studio Type</h3>
+<select>
+<option>Post Production Studio</option>
+<option>Recording Studio</option>
+<option>Mixing Stage</option>
+<option>Color Grading Suite</option>
+</select>
+
+<h3>Room Configuration</h3>
+
+ADR Room
+<input type="number" value="1">
+
+Mixing Room
+<input type="number" value="1">
+
+Editing Room
+<input type="number" value="2">
+
+Office
+<input type="number" value="1">
+
+Machine Room
+<input type="number" value="1">
+
+<button>Generate Layout</button>
+
+</div>
+
+<div class="right">
+2D Layout will appear here
+</div>
+
+</div>
+
 </body>
 </html>
