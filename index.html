@@ -84,6 +84,52 @@ Machine Room
 </div>
 
 </div>
+86  </div>
 
-</body>
-</html>
+87  <script>
+
+document.getElementById("generate").onclick=function(){
+
+const inputs=document.querySelectorAll("input[type=number]")
+
+const adr=inputs[0].value
+const mix=inputs[1].value
+const edit=inputs[2].value
+const office=inputs[3].value
+const machine=inputs[4].value
+
+const layout=document.querySelector(".right")
+
+layout.innerHTML=""
+
+function room(name){
+
+const div=document.createElement("div")
+
+div.style.width="120px"
+div.style.height="80px"
+div.style.border="2px solid black"
+div.style.display="inline-flex"
+div.style.alignItems="center"
+div.style.justifyContent="center"
+div.style.margin="10px"
+div.style.fontWeight="bold"
+
+div.innerText=name
+
+layout.appendChild(div)
+
+}
+
+for(let i=0;i<adr;i++) room("ADR")
+for(let i=0;i<mix;i++) room("MIX")
+for(let i=0;i<edit;i++) room("EDIT")
+for(let i=0;i<office;i++) room("OFFICE")
+for(let i=0;i<machine;i++) room("MACHINE")
+
+}
+
+</script>
+
+88  </body>
+89  </html>
