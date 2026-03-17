@@ -1,157 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DWave Designer v19.0 - Room Control Center</title>
+    <title>DWave Designer v22.0 - Final Edition</title>
     <style>
-        :root { --bg: #121212; --sidebar: #1e1e1e; --accent: #27ae60; --card: #ffffff; }
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); color: #fff; overflow: hidden; }
+        :root { --bg: #121212; --panel: #1e1e1e; --accent: #27ae60; --text: #e0e0e0; }
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
         
-        /* 1. 왼쪽 도면 작업 영역 */
-        .canvas-area { flex: 1; position: relative; background: #333; overflow: auto; padding: 20px; display: flex; align-items: flex-start; justify-content: flex-start; }
-        canvas { background: #fff; cursor: crosshair; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* 1. 도면 작업 영역 */
+        .canvas-area { flex: 1; position: relative; background: #222; overflow: hidden; cursor: crosshair; }
+        canvas { background: #fff; transform-origin: 0 0; }
 
-        /* 2. 오른쪽 실별 상세 설정 패널 */
-        .control-panel { width: 500px; background: #f0f2f5; color: #333; padding: 20px; overflow-y: auto; border-left: 2px solid #444; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
-
-        /* 실별 설정 카드 */
-        .room-card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-left: 10px solid #3498db; }
-        .room-info { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 15px; color: #2c3e50; }
+        /* 2. 컨트롤 패널 */
+        .sidebar { width: 480px; background: #f4f7f6; color: #333; padding: 20px; overflow-y: auto; border-left: 2px solid #444; z-index: 100; box-shadow: -5px 0 15px rgba(0,0,0,0.3); }
+        .tool-box { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 12px; z-index: 200; border: 1px solid #444; }
         
-        .setting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .setting-item { display: flex; flex-direction: column; }
-        .setting-item label { font-size: 11px; color: #7f8c8d; margin-bottom: 4px; font-weight: bold; }
-        .setting-item select, .setting-item input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        /* 룸 카드 & 설정 UI */
+        .room-card { background: white; border-radius: 12px; padding: 18px; margin-bottom: 20px; border-left: 10px solid #3498db; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+        .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .setting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; margin-bottom: 15px; }
+        .setting-item label { display: block; color: #7f8c8d; margin-bottom: 4px; font-weight: bold; }
+        
+        /* 공통 스타일 */
+        input, select { padding: 8px; border-radius: 5px; border: 1px solid #ddd; width: 100%; box-sizing: border-box; font-weight: bold; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 8px; color: #fff; width: 100%; transition: 0.2s; }
+        .btn-sm { width: auto; padding: 5px 10px; font-size: 11px; }
 
-        /* 실시간 계산 결과 테이블 */
-        .calc-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #f8f9fa; border-radius: 8px; overflow: hidden; }
-        .calc-table td { padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #eee; }
-        .res-val { font-weight: bold; color: #c0392b; text-align: right; }
-
-        .btn-del { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .calc-res { background: #eef7ee; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; border: 1px solid #d4ebd4; }
+        .val { color: #c0392b; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="canvas-area">
+<div class="tool-box">
+    <h3 style="margin:0 0 10px 0; color:#3498db;">DWave 제어센터</h3>
+    <input type="file" id="up" style="margin-bottom:10px; font-size:12px; color:#fff;">
+    <button class="btn" style="background:#f1c40f; color:#000;" onclick="setMode('scale')">📏 1. 기준 척도 설정 (1m 선 긋기)</button>
+    <button class="btn" style="background:#3498db;" onclick="setMode('room')">🏠 2. 방 영역 그리기</button>
+    <button class="btn" style="background:#e74c3c;" onclick="setMode('erase')">🧼 3. 지우개 (클릭하여 삭제)</button>
+    <div style="font-size:11px; color:#aaa; margin-top:10px; line-height:1.4;">
+        * 휠: 확대/축소<br>
+        * 우클릭 드래그: 도면 이동<br>
+        * 현재 모드: <b id="modeTxt" style="color:#fff;">방 그리기</b>
+    </div>
+</div>
+
+<div class="canvas-area" id="wrapper">
     <canvas id="cvs"></canvas>
-    <div style="position:absolute; top:30px; left:30px; background:rgba(0,0,0,0.7); padding:10px; border-radius:8px;">
-        <input type="file" id="up" style="color:white;">
-        <p style="font-size:11px; margin:5px 0 0 0;">* 도면 위 드래그로 방을 만드세요.</p>
-    </div>
 </div>
 
-<div class="control-panel">
-    <div class="panel-header">
-        <h2 style="margin:0;">방별 상세 설정</h2>
-        <select id="nextName" style="padding:8px; border-radius:6px; font-weight:bold;">
-            <option value="ADR">ADR Room</option>
-            <option value="MIX">Mixing Room</option>
-            <option value="EDIT">Editing Room</option>
-        </select>
-    </div>
-    
-    <div id="roomContainer">
-        <p style="text-align:center; color:#999; margin-top:100px;">도면에서 방 영역을 드래그하여 지정하면<br>상세 설정 카드가 나타납니다.</p>
-    </div>
-</div>
-
-<script>
-    const cvs = document.getElementById('cvs');
-    const ctx = cvs.getContext('2d');
-    let img = new Image();
-    let rooms = [];
-    let isDown = false;
-    let sx, sy;
-
-    document.getElementById('up').onchange = (e) => {
-        const r = new FileReader();
-        r.onload = (v) => { img.onload = () => { cvs.width = img.width; cvs.height = img.height; draw(); }; img.src = v.target.result; };
-        r.readAsDataURL(e.target.files[0]);
-    };
-
-    cvs.onmousedown = (e) => { isDown = true; sx = e.offsetX; sy = e.offsetY; };
-    cvs.onmousemove = (e) => { if(!isDown) return; draw(); ctx.strokeStyle='#3498db'; ctx.strokeRect(sx, sy, e.offsetX-sx, e.offsetY-sy); };
-    cvs.onmouseup = (e) => {
-        if(!isDown) return; isDown = false;
-        const w = Math.abs(e.offsetX - sx) / 100; // 100px = 1m
-        const d = Math.abs(e.offsetY - sy) / 100;
-        rooms.push({ 
-            id: Date.now(), name: document.getElementById('nextName').value,
-            w: w, d: d, x: sx, y: sy, rw: e.offsetX-sx, rd: e.offsetY-sy,
-            h: 2.7, alc: 2, gap: 50, gyp: 2
-        });
-        updateUI();
-    };
-
-    function draw() {
-        ctx.clearRect(0,0,cvs.width,cvs.height);
-        if(img.src) ctx.drawImage(img,0,0);
-        rooms.forEach(r => {
-            ctx.strokeStyle='#27ae60'; ctx.lineWidth=3; ctx.strokeRect(r.x, r.y, r.rw, r.rd);
-            ctx.fillStyle='rgba(39,174,96,0.1)'; ctx.fillRect(r.x, r.y, r.rw, r.rd);
-            ctx.fillStyle='#000'; ctx.fillText(r.name, r.x+5, r.y+15);
-        });
-    }
-
-    function updateUI() {
-        draw();
-        const container = document.getElementById('roomContainer');
-        container.innerHTML = "";
-
-        rooms.forEach((r, idx) => {
-            const peri = (r.w + r.d) * 2;
-            const area = peri * r.h;
-            
-            // 계산 로직
-            const alcQ = Math.ceil((area / 0.24) * r.alc * 1.1);
-            const woodQ = Math.ceil((peri / 0.45 + 1) * 1.1);
-            const gypQ = Math.ceil((area / 1.62) * r.gyp * 2 * 1.1);
-
-            const card = document.createElement('div');
-            card.className = 'room-card';
-            card.innerHTML = `
-                <div class="room-info">
-                    <span>#${idx+1} ${r.name}</span>
-                    <button class="btn-del" onclick="delRoom(${r.id})">삭제</button>
-                </div>
-                <div class="setting-grid">
-                    <div class="setting-item"><label>층고(H)</label><input type="number" value="${r.h}" onchange="edit(${r.id}, 'h', this.value)"></div>
-                    <div class="setting-item"><label>ALC 시공</label>
-                        <select onchange="edit(${r.id}, 'alc', this.value)">
-                            <option value="1" ${r.alc==1?'selected':''}>싱글</option>
-                            <option value="2" ${r.alc==2?'selected':''}>더블</option>
-                        </select>
-                    </div>
-                    <div class="setting-item"><label>공기층(mm)</label><input type="number" value="${r.gap}" onchange="edit(${r.id}, 'gap', this.value)"></div>
-                    <div class="setting-item"><label>석고 겹수</label>
-                        <select onchange="edit(${r.id}, 'gyp', this.value)">
-                            <option value="1" ${r.gyp==1?'selected':''}>1P</option>
-                            <option value="2" ${r.gyp==2?'selected':''}>2P</option>
-                        </select>
-                    </div>
-                </div>
-                <table class="calc-table">
-                    <tr><td>벽체 총 둘레 / 면적</td><td class="res-val">${peri.toFixed(1)}m / ${area.toFixed(1)}㎡</td></tr>
-                    <tr><td>ALC 블록(${r.alc}회)</td><td class="res-val">${alcQ} 장</td></tr>
-                    <tr><td>투바이(450간격)</td><td class="res-val">${woodQ} 본</td></tr>
-                    <tr><td>석고보드(양면 ${r.gyp}P)</td><td class="res-val">${gypQ} 매</td></tr>
-                </table>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function edit(id, key, val) {
-        const r = rooms.find(i => i.id === id);
-        r[key] = parseFloat(val);
-        updateUI();
-    }
-
-    function delRoom(id) {
-        rooms = rooms.filter(i => i.id !== id);
-        updateUI();
-    }
-</script>
-</body>
-</html>
+<div class="sidebar">
+    <h2 style="margin-top:0; border-bottom:3px solid #27ae60; padding-bottom:10px;">실별 상세 견적서</h2>
