@@ -6,45 +6,43 @@
         :root { --bg: #121212; --panel: #1e1e1e; --accent: #27ae60; --blue: #3498db; }
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: #121212; color: #fff; overflow: hidden; }
         
-        /* 작업 영역 (도면) */
+        /* 1. 왼쪽 컨트롤 타워 (설정창 핵심) */
+        .sidebar-left { width: 340px; background: rgba(0,0,0,0.9); padding: 25px; border-right: 1px solid #444; overflow-y: auto; z-index: 100; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
+        .section-title { font-size: 14px; color: var(--blue); margin: 20px 0 10px 0; border-bottom: 2px solid #333; padding-bottom: 5px; font-weight: bold; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #fff; font-size: 14px; transition: 0.2s; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 6px; }
+        input, select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #2c2c2c; color: #fff; font-weight: bold; box-sizing: border-box; }
+
+        /* 2. 중앙 도면 드로잉 영역 */
         .canvas-area { flex: 1; position: relative; background: #222; overflow: hidden; }
         canvas { background: #fff; transform-origin: 0 0; cursor: crosshair; }
 
-        /* 왼쪽 컨트롤 타워 */
-        .tool-bar { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; z-index: 100; border: 1px solid #444; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow-y: auto; max-height: 90vh; }
-        .section-title { font-size: 14px; color: var(--blue); margin: 15px 0 8px 0; border-bottom: 1px solid #333; padding-bottom: 5px; font-weight: bold; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 8px; color: #fff; font-size: 13px; transition: 0.2s; }
-        
-        /* 입력창 스타일 */
-        .input-group { margin-bottom: 10px; }
-        .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #2c2c2c; color: #fff; font-weight: bold; box-sizing: border-box; }
-
-        /* 오른쪽 실시간 리포트 */
-        .sidebar { width: 420px; background: #f4f7f6; color: #333; padding: 25px; overflow-y: auto; border-left: 2px solid #444; }
-        .room-card { background: white; border-radius: 12px; padding: 18px; margin-bottom: 20px; border-left: 10px solid var(--blue); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+        /* 3. 오른쪽 실시간 산출서 */
+        .sidebar-right { width: 420px; background: #f4f7f6; color: #333; padding: 25px; overflow-y: auto; border-left: 2px solid #444; }
+        .room-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 10px solid var(--blue); box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
         .res-val { color: #c0392b; font-weight: bold; font-size: 1.1em; }
-        .del-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right; font-size: 11px; }
+        .del-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; float: right; font-size: 11px; font-weight: bold; }
 
-        .status-box { font-size: 11px; color: #888; background: #000; padding: 10px; border-radius: 8px; margin-top: 15px; line-height: 1.5; }
+        .status-box { font-size: 11px; color: #777; background: #000; padding: 12px; border-radius: 8px; margin-top: 20px; line-height: 1.6; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
-<div class="tool-bar">
-    <h2 style="margin:0 0 15px 0; color:var(--blue);">DWave Pro v25.0</h2>
+<div class="sidebar-left">
+    <h2 style="margin:0 0 20px 0; color:var(--blue); border-bottom:3px solid var(--blue); padding-bottom:10px;">DWave Pro v25.0</h2>
     
     <div class="input-group">
-        <label>도면 이미지 업로드</label>
+        <label>📁 도면 이미지 업로드</label>
         <input type="file" id="up" accept="image/*">
     </div>
 
     <div class="section-title">Step 1. 척도 및 모드</div>
-    <button class="btn" style="background:#f1c40f; color:#000;" onclick="setMode('scale')">📐 1m 기준 척도 설정</button>
+    <button class="btn" style="background:#f1c40f; color:#000;" onclick="setMode('scale')">📏 1m 기준 척도 설정</button>
     <button class="btn" style="background:var(--accent);" onclick="setMode('room')">🏠 방 영역 그리기 모드</button>
 
-    <div class="section-title">Step 2. 시공 공통 설정</div>
+    <div class="section-title">Step 2. 시공 상세 설정 (공통)</div>
     <div class="input-group">
         <label>기본 층고 (H)</label>
         <input type="number" id="baseH" value="2.7" step="0.1" onchange="update()">
@@ -62,27 +60,28 @@
         <input type="number" id="baseGap" value="50" onchange="update()">
     </div>
     <div class="input-group">
-        <label>벽체 마감 타입</label>
+        <label>벽체 구조 타입</label>
         <select id="baseLeaf" onchange="update()">
             <option value="single">일반 마감</option>
             <option value="double">더블 리프(Double Leaf)</option>
         </select>
     </div>
     <div class="input-group">
-        <label>석고 겹수</label>
+        <label>석고 겹수 (전체)</label>
         <select id="baseGyp" onchange="update()">
             <option value="1">1P</option>
             <option value="2" selected>2P</option>
-            <option value="4">4P (양면2P)</option>
+            <option value="4">4P (양면 2P)</option>
         </select>
     </div>
 
-    <button class="btn" style="background:#e74c3c; margin-top:10px;" onclick="resetAll()">🧼 전체 초기화</button>
+    <button class="btn" style="background:#e74c3c; margin-top:20px;" onclick="resetAll()">🧼 전체 데이터 초기화</button>
     
     <div class="status-box">
-        현재 모드: <b id="modeTxt" style="color:var(--blue);">방 그리기</b><br>
-        * 휠: 줌 | 우클릭 드래그: 이동<br>
-        * 척도 설정 후 방을 그리세요.
+        <b>현재 모드:</b> <span id="modeTxt" style="color:var(--blue); font-weight:bold;">방 그리기</span><br>
+        * <b>마우스 휠</b>: 도면 확대/축소<br>
+        * <b>우클릭 드래그</b>: 도면 이동<br>
+        * <b>좌클릭 드래그</b>: 측정 및 그리기
     </div>
 </div>
 
@@ -90,10 +89,10 @@
     <canvas id="cvs"></canvas>
 </div>
 
-<div class="sidebar">
-    <h2 style="margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px;">실시간 자재 산출</h2>
+<div class="sidebar-right">
+    <h2 style="margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px;">실시간 자재 산출서</h2>
     <div id="roomContainer">
-        <p style="text-align:center; color:#999; margin-top:50px;">도면 로드 및 척도 설정 후<br>영역을 그려주세요.</p>
+        <p style="text-align:center; color:#999; margin-top:100px;">도면을 불러온 뒤 척도를 맞추고<br>방 영역을 지정해 주세요.</p>
     </div>
 </div>
 
@@ -104,12 +103,22 @@
     let scalePxM = 100, zoom = 1, offX = 0, offY = 0;
     let sx, sy;
 
+    // 이미지 업로드 로직
     document.getElementById('up').onchange = (e) => {
         const r = new FileReader();
-        r.onload = (v) => { img.onload = () => { cvs.width = img.width; cvs.height = img.height; update(); }; img.src = v.target.result; };
+        r.onload = (v) => { 
+            img.onload = () => { 
+                cvs.width = img.width; 
+                cvs.height = img.height; 
+                offX = 50; offY = 50;
+                update(); 
+            }; 
+            img.src = v.target.result; 
+        };
         r.readAsDataURL(e.target.files[0]);
     };
 
+    // 줌/팬 제어
     window.addEventListener('wheel', (e) => { zoom *= (e.deltaY > 0 ? 0.9 : 1.1); update(); }, {passive: false});
     cvs.oncontextmenu = (e) => e.preventDefault();
     
@@ -146,8 +155,8 @@
         const ey = (e.offsetY - offY) / zoom;
         if(mode === 'scale') {
             const dist = Math.sqrt(Math.pow(ex-sx, 2) + Math.pow(ey-sy, 2));
-            const m = prompt("방금 그은 선의 실제 길이는 몇 m인가요?", "1");
-            if(m) scalePxM = dist / parseFloat(m);
+            const m = prompt("방금 그은 노란 선의 실제 길이는 몇 m인가요? (도면 치수 입력)", "1");
+            if(m) { scalePxM = dist / parseFloat(m); setMode('room'); }
         } else {
             const wM = Math.abs(ex - sx) / scalePxM;
             const dM = Math.abs(ey - sy) / scalePxM;
@@ -156,8 +165,12 @@
         update();
     };
 
-    function setMode(m) { mode = m; document.getElementById('modeTxt').innerText = m === 'scale' ? "척도 설정 중" : "방 그리기"; }
-    function resetAll() { if(confirm("초기화할까요?")) { rooms = []; update(); } }
+    function setMode(m) { 
+        mode = m; 
+        document.getElementById('modeTxt').innerText = m === 'scale' ? "척도 설정 중..." : "방 그리기"; 
+    }
+
+    function resetAll() { if(confirm("모든 데이터를 삭제할까요?")) { rooms = []; update(); } }
     function del(id) { rooms = rooms.filter(r => r.id !== id); update(); }
 
     function update() {
@@ -171,10 +184,9 @@
             ctx.strokeRect(r.sx, r.sy, r.w, r.d);
             ctx.fillStyle = 'rgba(39, 174, 96, 0.15)'; ctx.fillRect(r.sx, r.sy, r.w, r.d);
             ctx.fillStyle = '#000'; ctx.font = `bold ${14/zoom}px Arial`;
-            ctx.fillText(`Room #${i+1}`, r.sx + 5/zoom, r.sy + 18/zoom);
+            ctx.fillText(`Room #${i+1} (${r.rw.toFixed(2)}x${r.rd.toFixed(2)}m)`, r.sx + 5/zoom, r.sy + 18/zoom);
         });
 
-        // 리포트 업데이트
         const h = parseFloat(document.getElementById('baseH').value);
         const alc = parseInt(document.getElementById('baseAlc').value);
         const gap = document.getElementById('baseGap').value;
@@ -188,18 +200,21 @@
             const peri = (r.rw + r.rd) * 2;
             const area = peri * h;
             const alcQty = Math.ceil((area / 0.24) * alc * 1.05);
-            const woodQty = Math.ceil((peri / 0.45 * (leaf === 'double' ? 2 : 1)) * 1.1);
+            const woodQty = Math.ceil((peri / 0.45 * (leaf === 'double' ? 2 : 1)) * 1.15);
             const gypQty = Math.ceil((area / 1.62) * gyp * 1.1);
 
             const card = document.createElement('div');
             card.className = 'room-card';
             card.innerHTML = `
                 <button class="del-btn" onclick="del(${r.id})">삭제</button>
-                <div style="font-weight:bold; color:#3498db; margin-bottom:10px;">#${i+1} 공간 (${r.rw.toFixed(2)}m x ${r.rd.toFixed(2)}m)</div>
-                <div style="font-size:12px; line-height:1.6;">
-                    설정: H ${h}m | ALC ${alc}회 | 공기층 ${gap}mm | ${leaf==='double'?'더블리프':'일반'}<br>
-                    둘레: ${peri.toFixed(2)}m / 면적: ${area.toFixed(1)}㎡<br>
-                    <b>ALC: <span class="res-val">${alcQty}장</span> / 투바이: <span class="res-val">${woodQty}본</span> / 석고: <span class="res-val">${gypQty}매</span></b>
+                <div style="font-weight:bold; color:#3498db; margin-bottom:12px; font-size:16px;">#${i+1} 공간 (${r.rw.toFixed(2)}m x ${r.rd.toFixed(2)}m)</div>
+                <div style="font-size:13px; line-height:1.7; color:#555;">
+                    <span style="background:#eee; padding:2px 5px; border-radius:4px;">H: ${h}m / ALC: ${alc}회 / 공기층: ${gap}mm / ${leaf==='double'?'더블리프':'일반'}</span><br>
+                    벽체 둘레: <b>${peri.toFixed(2)}m</b> / 총 면적: <b>${area.toFixed(1)}㎡</b><br>
+                    <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:8px;">
+                        ALC 블록: <span class="res-val">${alcQty}장</span><br>
+                        투바이(목재): <span class="res-val">${woodQty}본</span> / 석고보드: <span class="res-val">${gypQty}매</span>
+                    </div>
                 </div>
             `;
             container.appendChild(card);
