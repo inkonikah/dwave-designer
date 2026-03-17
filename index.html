@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>프리미엄 자재 산출 툴</title>
+    <title>Dwave Home</title>
     <style>
         :root {
             --primary: #4361ee;
@@ -21,92 +21,107 @@
         body { margin: 0; padding: 0; display: flex; height: 100vh; font-family: 'Pretendard', 'Malgun Gothic', sans-serif; overflow: hidden; background-color: #e0e4e8; color: var(--text-main); }
         
         #sidebar { width: 400px; background: var(--card-bg); display: flex; flex-direction: column; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
-        .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid var(--border); background: var(--primary); color: white; }
-        .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 700; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid var(--border); background: var(--dark); color: white; }
+        .sidebar-header h2 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; color: #fff; }
+        .sidebar-header p { margin: 4px 0 0 0; font-size: 12px; opacity: 0.7; font-weight: 300; }
         
         .sidebar-content { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .sidebar-content::-webkit-scrollbar { width: 6px; }
         .sidebar-content::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
 
-        .section-box { background: var(--light-bg); border-radius: 10px; padding: 15px; border: 1px solid var(--border); }
-        .section-title { margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--dark); }
+        .section-box { background: var(--light-bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border); }
+        .section-title { margin: 0 0 15px 0; font-size: 14px; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 5px; }
         
         .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-        .form-group:last-child { margin-bottom: 0; }
         .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
         .form-group input[type="number"], .form-group select, .form-group input[type="file"] { 
-            padding: 9px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; outline: none; transition: border 0.2s;
+            padding: 10px 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 13px; outline: none; transition: all 0.2s;
         }
         
-        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; }
-        .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; }
+        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
         
-        .highlight-box { background-color: #fff0f3; border: 1px solid #ffccd5; padding: 10px; border-radius: 6px; margin-top: 10px; }
+        .highlight-box { background-color: #fff0f3; border: 1px solid #ffccd5; padding: 12px; border-radius: 8px; margin-top: 5px; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { padding: 10px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
-        button:active { transform: scale(0.98); }
+        button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        button:active { transform: scale(0.96); }
         .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-primary.active { background-color: var(--danger); box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.2); }
         .btn-success { background-color: var(--success); color: white; }
-        .btn-outline { background-color: transparent; border: 1px solid #ced4da; color: var(--text-main); }
+        .btn-outline { background-color: white; border: 1px solid #ced4da; color: var(--text-main); }
+        .btn-outline:hover { background-color: #f1f3f5; }
         .btn-full { width: 100%; margin-top: 5px; }
 
-        .room-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .room-header { font-weight: bold; font-size: 14px; color: var(--primary); margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 5px; }
-        .room-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
-        
-        .material-card { background: #eef2fa; border: 1px solid #d7e3fc; border-radius: 8px; padding: 15px; margin-top: 15px; }
-        .material-title { font-size: 15px; font-weight: bold; color: var(--primary-hover); margin-bottom: 10px; }
-        .material-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .material-item { background: white; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; }
-        .material-item-title { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
-        .material-item-value { font-size: 16px; font-weight: 800; color: var(--dark); }
-        .material-item-value span { font-size: 12px; font-weight: normal; margin-left: 2px; }
+        .results-container { margin-top: 10px; }
+        .results-header { font-size: 18px; font-weight: 900; color: var(--dark); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--dark); }
 
-        #scaleStatus { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #ffe3e3; color: var(--danger); font-size: 11px; font-weight: bold; margin-top: 5px; }
+        .room-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.03); position: relative; }
+        .room-header { font-weight: 800; font-size: 15px; color: var(--primary); margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .room-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-main); }
+        
+        .material-card { background: #eef2fa; border: 1px solid #d7e3fc; border-radius: 12px; padding: 18px; margin-top: 20px; }
+        .material-title { font-size: 16px; font-weight: 900; color: var(--primary-hover); margin-bottom: 12px; text-align: center; }
+        .material-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .material-item { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center; }
+        .material-item-title { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .material-item-value { font-size: 18px; font-weight: 900; color: var(--dark); }
+        .material-item-value span { font-size: 12px; font-weight: 500; margin-left: 2px; }
+
+        #scaleStatus { display: inline-block; padding: 5px 10px; border-radius: 6px; background: #ffe3e3; color: var(--danger); font-size: 11px; font-weight: 800; margin-top: 8px; }
         #scaleStatus.set { background: #d8f3dc; color: var(--success); }
 
-        .shortcut-box { background: var(--dark); color: rgba(255,255,255,0.8); font-size: 12px; padding: 12px 20px; line-height: 1.6; }
+        .shortcut-box { background: var(--dark); color: rgba(255,255,255,0.6); font-size: 11px; padding: 15px 20px; line-height: 1.6; }
 
         #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background-color: #f1f3f5; cursor: crosshair; }
         canvas { display: block; }
-        canvas.grid-bg { background-image: radial-gradient(#ced4da 1px, transparent 1px); background-size: 30px 30px; background-position: -15px -15px; }
+        canvas.grid-bg { 
+            background-image: 
+                linear-gradient(rgba(206, 212, 218, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(206, 212, 218, 0.4) 1px, transparent 1px);
+            background-size: 40px 40px; 
+        }
     </style>
 </head>
 <body>
 
 <div id="sidebar">
     <div class="sidebar-header">
-        <h2>📐 공간 및 자재 산출 툴</h2>
+        <h2>Dwave Home</h2>
+        <p>CONSTRUCTION QUANTITY SURVEY SOLUTION</p>
     </div>
     
     <div class="sidebar-content">
         <div class="section-box">
-            <div class="section-title">1. 도면 및 척도 설정</div>
+            <div class="section-title">📍 1. 척도 설정</div>
             <div class="form-group"><input type="file" id="imageLoader" accept="image/*"></div>
-            <button id="btnCalibrate" class="btn-primary btn-full">척도 설정 (기준선 긋기)</button>
+            <button id="btnCalibrate" class="btn-primary btn-full">척도 설정 시작</button>
             <div style="text-align: center;"><span id="scaleStatus">척도 미설정 (임시: 1px = 10mm)</span></div>
         </div>
 
         <div class="section-box">
-            <div class="section-title">2. 공간(벽체) 그리기</div>
+            <div class="section-title">🏗️ 2. 도면 설계</div>
             <div class="btn-grid">
                 <button id="btnDraw" class="btn-primary">✏️ 선 그리기</button>
+                <button id="btnDelete" class="btn-outline" style="color: var(--danger); border-color: var(--danger);">❌ 개별 삭제</button>
                 <button id="btnFinish" class="btn-success">✔️ 현재 선 완료</button>
                 <button id="btnUndo" class="btn-outline">↩️ 되돌리기</button>
-                <button id="btnFit" class="btn-outline">🔍 도면 맞춤</button>
             </div>
-            <button id="btnClear" class="btn-outline btn-full" style="margin-top: 8px; color: var(--danger);">🗑️ 전체 도면 초기화</button>
+            <div class="btn-grid" style="margin-top: 8px;">
+                <button id="btnFit" class="btn-outline">🔍 도면 맞춤</button>
+                <button id="btnClear" class="btn-outline" style="color: var(--text-muted);">🗑️ 전체 초기화</button>
+            </div>
         </div>
 
         <div class="section-box">
-            <div class="section-title">3. 자재 스펙 설정</div>
+            <div class="section-title">📦 3. 자재 및 공법 사양</div>
             <div class="form-group">
                 <label>벽 높이 (mm)</label>
                 <input type="number" id="wallHeight" value="2400" step="100">
             </div>
             <div class="form-group">
-                <label>기본 골조 (뼈대)</label>
+                <label>기본 골조</label>
                 <select id="baseWallType">
                     <option value="none">없음</option>
                     <option value="alc75">ALC 블록 75T</option>
@@ -115,11 +130,11 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>마감 및 충진재</label>
+                <label>마감 자재 선택</label>
                 <div class="checkbox-group"><input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반 석고 9.5T (3x6)</label></div>
                 <div class="checkbox-group"><input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음 석고 12.5T (3x6)</label></div>
-                <select id="insulationType" style="margin-top: 4px;">
-                    <option value="none">충진재 안 함</option>
+                <select id="insulationType">
+                    <option value="none">충진재 미사용</option>
                     <option value="glasswool">글라스울 (450x1000)</option>
                     <option value="rockwool">락울 (450x1000)</option>
                 </select>
@@ -128,22 +143,23 @@
             <div class="highlight-box">
                 <div class="checkbox-group" style="margin:0;">
                     <input type="checkbox" id="chkDoubleLeaf"> 
-                    <label for="chkDoubleLeaf" style="color:var(--danger); font-weight:bold; font-size:13px;">🔥 더블리프(이중벽) 물량 2배 적용</label>
+                    <label for="chkDoubleLeaf" style="color:var(--danger); font-weight:800; font-size:13px;">🔥 더블리프(이중벽) 수량 x2</label>
                 </div>
             </div>
         </div>
 
-        <div id="resultsArea">
+        <div id="resultsArea" class="results-container">
+            <div class="results-header">Dwave 자재산출</div>
             <div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">
-                도면을 그리면 이 곳에 공간별 내역과<br>총 자재 물량이 계산됩니다.
+                도면을 설계하면 실시간으로<br>산출 내역이 표시됩니다.
             </div>
         </div>
     </div>
     
     <div class="shortcut-box">
-        <b>[조작 팁]</b><br>
-        • 화면 이동: <b>H</b> + 마우스 드래그<br>
-        • 선 끊기: 도형 닫기(스냅) 또는 <b>'현재 선 완료'</b> 클릭
+        • <b>H</b> + 드래그: 화면 이동 / <b>휠</b>: 확대 축소<br>
+        • <b>Shift</b> + 클릭: 직교 모드 (수평/수직)<br>
+        • <b>삭제 모드</b>: 도면 위 이름표나 점을 클릭하여 삭제
     </div>
 </div>
 
@@ -159,6 +175,7 @@
     const imageLoader = document.getElementById('imageLoader');
     const btnCalibrate = document.getElementById('btnCalibrate');
     const btnDraw = document.getElementById('btnDraw');
+    const btnDelete = document.getElementById('btnDelete');
     const btnFinish = document.getElementById('btnFinish');
     const btnUndo = document.getElementById('btnUndo');
     const btnFit = document.getElementById('btnFit');
@@ -174,14 +191,10 @@
     const chkDoubleLeaf = document.getElementById('chkDoubleLeaf');
 
     let image = null;
-    let mode = 'idle'; 
-    
-    // 핵심 수정: 완성된 방 배열과, 현재 그리고 있는 선 배열을 완벽히 분리
+    let mode = 'idle'; // 'idle', 'draw', 'calibrate', 'delete'
     let shapes = []; 
     let currentPoints = [];
-    
     let calibPoints = [];
-    let shapeCounter = 1;
     let scale = 10; 
     let isScaleSet = false;
 
@@ -225,7 +238,7 @@
     });
 
     window.addEventListener('keyup', (e) => {
-        if (e.key.toLowerCase() === 'h') { isHDown = false; isDragging = false; canvas.style.cursor = mode === 'draw' ? 'crosshair' : 'default'; }
+        if (e.key.toLowerCase() === 'h') { isHDown = false; isDragging = false; canvas.style.cursor = (mode === 'draw' || mode === 'delete') ? 'crosshair' : 'default'; }
         if (e.key === 'Shift') isShiftDown = false;
     });
 
@@ -234,7 +247,6 @@
         return { x: (e.clientX - rect.left - panX) / zoom, y: (e.clientY - rect.top - panY) / zoom };
     }
 
-    // 전역 스냅 포인트 (다른 방의 꼭짓점에 달라붙기)
     function findGlobalSnap(x, y) {
         let snapDist = 15 / zoom; 
         for (let shape of shapes) {
@@ -243,9 +255,32 @@
             }
         }
         if (currentPoints.length > 2 && Math.hypot(x - currentPoints[0].x, y - currentPoints[0].y) < snapDist) {
-            return {x: currentPoints[0].x, y: currentPoints[0].y}; // 자기 자신 시작점 스냅
+            return {x: currentPoints[0].x, y: currentPoints[0].y}; 
         }
         return null;
+    }
+
+    // 객체 선택 삭제 로직
+    function findShapeToDelete(x, y) {
+        let hitDist = 20 / zoom;
+        // 1. 이름표(중앙) 근처 클릭 확인
+        for (let i = shapes.length - 1; i >= 0; i--) {
+            let s = shapes[i];
+            if (s.isClosed) {
+                let minX = Math.min(...s.points.map(p => p.x));
+                let maxX = Math.max(...s.points.map(p => p.x));
+                let minY = Math.min(...s.points.map(p => p.y));
+                let maxY = Math.max(...s.points.map(p => p.y));
+                let cx = (minX + maxX) / 2;
+                let cy = (minY + maxY) / 2;
+                if (Math.hypot(x - cx, y - cy) < 40 / zoom) return i;
+            }
+            // 2. 선/점 클릭 확인
+            for (let pt of s.points) {
+                if (Math.hypot(x - pt.x, y - pt.y) < hitDist) return i;
+            }
+        }
+        return -1;
     }
 
     canvas.addEventListener('mousedown', (e) => {
@@ -254,9 +289,19 @@
             canvas.style.cursor = 'grabbing'; return;
         }
 
+        let {x, y} = getMousePos(e);
+
+        if (mode === 'delete') {
+            let idx = findShapeToDelete(x, y);
+            if (idx !== -1) {
+                shapes.splice(idx, 1);
+                updateResults(); draw();
+            }
+            return;
+        }
+
         if (mode === 'idle') return;
 
-        let {x, y} = getMousePos(e);
         if (snapPt) { x = snapPt.x; y = snapPt.y; } 
         else if (isShiftDown && mode === 'draw' && currentPoints.length > 0) {
             const last = currentPoints[currentPoints.length - 1];
@@ -277,10 +322,10 @@
                 mode = 'idle'; calibPoints = []; btnCalibrate.classList.remove('active'); updateResults();
             }
         } else if (mode === 'draw') {
-            // 도형 닫기 (방 완성)
             if (currentPoints.length > 2 && x === currentPoints[0].x && y === currentPoints[0].y) {
-                shapes.push({ id: shapeCounter++, name: `공간 ${shapeCounter-1}`, points: [...currentPoints], isClosed: true });
-                currentPoints = []; // 방 완성 후 초기화 (룸2 준비)
+                let roomCount = shapes.filter(s => s.isClosed).length + 1;
+                shapes.push({ name: `Room ${roomCount}`, points: [...currentPoints], isClosed: true });
+                currentPoints = [];
                 updateResults(); draw(); return;
             }
             currentPoints.push({x, y});
@@ -311,17 +356,27 @@
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
         let newZoom = zoom * Math.exp((e.deltaY < 0 ? 1 : -1) * 0.15);
-        if (newZoom < 0.15) newZoom = 0.15; if (newZoom > 20) newZoom = 20;
+        if (newZoom < 0.1) newZoom = 0.1; if (newZoom > 20) newZoom = 20;
         panX = mx - (mx - panX) * (newZoom / zoom); panY = my - (my - panY) * (newZoom / zoom); zoom = newZoom;
         draw();
     }, { passive: false });
 
-    // 버튼 액션
+    // 버튼 액션 관리
+    function setMode(newMode, btn) {
+        mode = newMode;
+        [btnCalibrate, btnDraw, btnDelete].forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        canvas.style.cursor = (mode === 'draw' || mode === 'delete' || mode === 'calibrate') ? 'crosshair' : 'default';
+    }
+
+    btnCalibrate.addEventListener('click', () => setMode('calibrate', btnCalibrate));
+    btnDraw.addEventListener('click', () => setMode('draw', btnDraw));
+    btnDelete.addEventListener('click', () => setMode('delete', btnDelete));
+    
     btnFit.addEventListener('click', () => {
         let allPts = [];
         shapes.forEach(s => allPts.push(...s.points));
         allPts.push(...currentPoints);
-        
         if (allPts.length === 0) { panX = canvas.width / 2; panY = canvas.height / 2; zoom = 1; draw(); return; }
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         for (let pt of allPts) {
@@ -329,43 +384,34 @@
             maxX = Math.max(maxX, pt.x); maxY = Math.max(maxY, pt.y);
         }
         let w = maxX - minX, h = maxY - minY;
-        if (w === 0 || h === 0) { panX = canvas.width / 2 - minX; panY = canvas.height / 2 - minY; zoom = 1; } 
-        else {
-            let scaleX = (canvas.width - 150) / w, scaleY = (canvas.height - 150) / h;
-            zoom = Math.min(scaleX, scaleY); if (zoom > 5) zoom = 5; if (zoom < 0.1) zoom = 0.1;
-            panX = canvas.width / 2 - (minX + w / 2) * zoom; panY = canvas.height / 2 - (minY + h / 2) * zoom;
-        }
+        let scaleX = (canvas.width - 150) / (w || 1), scaleY = (canvas.height - 150) / (h || 1);
+        zoom = Math.min(scaleX, scaleY); if (zoom > 5) zoom = 5; if (zoom < 0.1) zoom = 0.1;
+        panX = canvas.width / 2 - (minX + w / 2) * zoom; panY = canvas.height / 2 - (minY + h / 2) * zoom;
         draw();
     });
 
-    btnCalibrate.addEventListener('click', () => { mode = 'calibrate'; calibPoints = []; btnCalibrate.classList.add('active'); btnDraw.classList.remove('active'); canvas.style.cursor = 'crosshair'; });
-    btnDraw.addEventListener('click', () => { mode = 'draw'; btnDraw.classList.add('active'); btnCalibrate.classList.remove('active'); canvas.style.cursor = 'crosshair'; });
-    
-    // 현재 선 완료 처리 (열린 도형으로 저장하고 다음 선 그리기 준비)
     btnFinish.addEventListener('click', () => {
         if (mode === 'draw' && currentPoints.length > 1) {
-            shapes.push({ id: shapeCounter++, name: `독립벽체 ${shapeCounter-1}`, points: [...currentPoints], isClosed: false });
+            let wallCount = shapes.filter(s => !s.isClosed).length + 1;
+            shapes.push({ name: `Wall ${wallCount}`, points: [...currentPoints], isClosed: false });
             currentPoints = [];
             updateResults(); draw();
         }
     });
     
     function doUndo() {
-        if (currentPoints.length > 0) {
-            currentPoints.pop();
-        } else if (shapes.length > 0) {
-            // 완성된 도형 되살리기
+        if (currentPoints.length > 0) currentPoints.pop();
+        else if (shapes.length > 0) {
             let lastShape = shapes.pop();
             currentPoints = [...lastShape.points];
-            if (lastShape.isClosed) { currentPoints.pop(); } // 닫힌 점 빼기
-            shapeCounter--;
+            if (lastShape.isClosed) currentPoints.pop();
         }
         updateResults(); draw();
     }
 
     btnClear.addEventListener('click', () => {
-        shapes = []; currentPoints = []; calibPoints = []; mode = 'idle'; shapeCounter = 1;
-        btnDraw.classList.remove('active'); btnCalibrate.classList.remove('active');
+        if(!confirm("모든 도면 정보를 초기화하시겠습니까?")) return;
+        shapes = []; currentPoints = []; calibPoints = []; setMode('idle', null);
         panX = canvas.width / 2; panY = canvas.height / 2; zoom = 1;
         updateResults(); draw();
     });
@@ -380,9 +426,9 @@
         ctx.rotate(angle);
         let text = `${Math.round(distMm)} mm`;
         let fontSize = 12 / zoom;
-        ctx.font = `600 ${fontSize}px 'Pretendard', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.font = `700 ${fontSize}px 'Pretendard', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
         let textWidth = ctx.measureText(text).width;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.beginPath(); ctx.roundRect(-textWidth/2 - 5/zoom, -fontSize - 5/zoom, textWidth + 10/zoom, fontSize + 8/zoom, 4/zoom); ctx.fill();
         ctx.fillStyle = color; ctx.fillText(text, 0, -3/zoom); ctx.restore();
     }
@@ -397,13 +443,13 @@
             if (mode === 'calibrate' && calibPoints.length === 1) { ctx.moveTo(calibPoints[0].x, calibPoints[0].y); ctx.lineTo(mouseX, mouseY); ctx.stroke(); }
         }
 
-        // 완성된 방들 그리기
         for (let shape of shapes) {
             let pts = shape.points;
-            ctx.strokeStyle = '#2b2d42'; ctx.lineWidth = 3 / zoom; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#2b2d42'; 
+            ctx.lineWidth = 4 / zoom; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
             for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-            if (shape.isClosed) { ctx.lineTo(pts[0].x, pts[0].y); ctx.fillStyle = 'rgba(67, 97, 238, 0.1)'; ctx.fill(); }
+            if (shape.isClosed) { ctx.lineTo(pts[0].x, pts[0].y); ctx.fillStyle = (mode === 'delete') ? 'rgba(217, 4, 41, 0.2)' : 'rgba(67, 97, 238, 0.1)'; ctx.fill(); }
             ctx.stroke();
 
             for (let i = 0; i < pts.length - 1; i++) drawLineLabel(pts[i], pts[i+1], '#2b2d42');
@@ -422,54 +468,40 @@
                 }
                 let areaSqM = (Math.abs(s1 - s2) / 2 / 1000000).toFixed(2); let pyeong = (areaSqM * 0.3025).toFixed(2);
                 let cx = (minX + maxX) / 2; let cy = (minY + maxY) / 2;
-
                 ctx.save(); ctx.translate(cx, cy);
-                let fT = 16 / zoom; let fS = 12 / zoom;
-                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(-55/zoom, -35/zoom, 110/zoom, 70/zoom, 10/zoom);
-                ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 10/zoom; ctx.shadowOffsetY = 4/zoom; ctx.fill();
-                ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#4361ee'; ctx.lineWidth = 2 / zoom; ctx.stroke();
-                ctx.fillStyle = '#4361ee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(-55/zoom, -35/zoom, 110/zoom, 70/zoom, 12/zoom);
+                ctx.shadowColor = 'rgba(0,0,0,0.1)'; ctx.shadowBlur = 10/zoom; ctx.fill();
+                ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#4361ee'; ctx.lineWidth = 2 / zoom; ctx.stroke();
+                ctx.fillStyle = ctx.strokeStyle; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.font = `bold ${12/zoom}px 'Pretendard', sans-serif`; ctx.fillText(shape.name, 0, -20/zoom);
-                ctx.fillStyle = '#2b2d42'; ctx.font = `800 ${fT}px 'Pretendard', sans-serif`; ctx.fillText(`${areaSqM} ㎡`, 0, 0);
-                ctx.fillStyle = '#6c757d'; ctx.font = `600 ${fS}px 'Pretendard', sans-serif`; ctx.fillText(`(${pyeong} 평)`, 0, 18/zoom);
+                ctx.fillStyle = '#2b2d42'; ctx.font = `900 ${16/zoom}px 'Pretendard', sans-serif`; ctx.fillText(`${areaSqM} ㎡`, 0, 0);
+                ctx.fillStyle = '#6c757d'; ctx.font = `600 ${12/zoom}px 'Pretendard', sans-serif`; ctx.fillText(`(${pyeong} 평)`, 0, 18/zoom);
                 ctx.restore();
             }
         }
 
-        // 현재 그리고 있는 선
         if (currentPoints.length > 0) {
-            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 3 / zoom; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 3 / zoom; ctx.beginPath(); ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
             for (let i = 1; i < currentPoints.length; i++) ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
             if (mode === 'draw') ctx.lineTo(mouseX, mouseY);
             ctx.stroke();
-
-            for (let i = 0; i < currentPoints.length - 1; i++) drawLineLabel(currentPoints[i], currentPoints[i+1], '#d90429');
-            if (mode === 'draw') drawLineLabel(currentPoints[currentPoints.length-1], {x: mouseX, y: mouseY}, '#d90429');
-
-            ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#d90429'; ctx.lineWidth = 1.5 / zoom;
-            for (let pt of currentPoints) { ctx.beginPath(); ctx.arc(pt.x, pt.y, 4 / zoom, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
         }
 
         if (snapPt) {
-            ctx.beginPath(); ctx.arc(snapPt.x, snapPt.y, 7 / zoom, 0, Math.PI * 2);
+            ctx.beginPath(); ctx.arc(snapPt.x, snapPt.y, 8 / zoom, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(217, 4, 41, 0.4)'; ctx.fill();
-            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 1.5 / zoom; ctx.stroke();
+            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 2 / zoom; ctx.stroke();
         }
-
         ctx.restore();
     }
 
     function updateResults() {
         if (shapes.length === 0 && currentPoints.length < 2) {
-            resultsArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">공간 그리기 및 자석 스냅 기능을 활용해<br>도면을 완성해 주세요.</div>`;
+            resultsArea.innerHTML = `<div class="results-header">Dwave 자재산출</div><div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">도면을 설계하면 실시간으로<br>산출 내역이 표시됩니다.</div>`;
             return;
         }
-
         let totalLenMm = 0; let totalAreaSqM = 0; let totalNodes = 0;
-        let html = `<div>`;
-
-        // 완료된 방
+        let html = `<div class="results-header">Dwave 자재산출</div>`;
         for (let shape of shapes) {
             let pts = shape.points; let shapeLen = 0; totalNodes += pts.length;
             for (let i = 0; i < pts.length - 1; i++) shapeLen += Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y) * scale;
@@ -485,59 +517,24 @@
                 totalAreaSqM += shapeArea;
             }
             totalLenMm += shapeLen;
-
-            html += `
-                <div class="room-card">
-                    <div class="room-header">🏷️ ${shape.name} ${shape.isClosed ? '' : '<span style="color:#d90429;font-size:11px;">(미완성 독립벽)</span>'}</div>
-                    <div class="room-data"><span>벽체 길이:</span> <b>${(shapeLen / 1000).toFixed(2)} m</b></div>
-                    ${shapeArea > 0 ? `<div class="room-data"><span>바닥 면적:</span> <b>${shapeArea.toFixed(2)} ㎡ (${(shapeArea * 0.3025).toFixed(2)}평)</b></div>` : ''}
-                </div>`;
+            html += `<div class="room-card"><div class="room-header">🏷️ ${shape.name}</div><div class="room-data"><span>벽체 길이:</span> <b>${(shapeLen / 1000).toFixed(2)} m</b></div>${shapeArea > 0 ? `<div class="room-data"><span>바닥 면적:</span> <b>${shapeArea.toFixed(2)} ㎡ (${(shapeArea * 0.3025).toFixed(2)}평)</b></div>` : ''}</div>`;
         }
-
-        // 현재 그리고 있는 선 길이 합산
-        if (currentPoints.length > 1) {
-            let currentLen = 0; totalNodes += currentPoints.length;
-            for (let i = 0; i < currentPoints.length - 1; i++) currentLen += Math.hypot(currentPoints[i+1].x - currentPoints[i].x, currentPoints[i+1].y - currentPoints[i].y) * scale;
-            totalLenMm += currentLen;
-            html += `<div class="room-card" style="border-color:#d90429;"><div class="room-header" style="color:#d90429;">✏️ 긋고 있는 선</div><div class="room-data"><span>벽체 길이:</span> <b>${(currentLen / 1000).toFixed(2)} m</b></div></div>`;
-        }
-
-        // 더블리프 배수 적용
         let leafMultiplier = chkDoubleLeaf.checked ? 2 : 1;
         let hMm = parseFloat(wallHeightInput.value) || 2400;
-        let wallAreaM2 = (totalLenMm / 1000) * (hMm / 1000) * leafMultiplier; // 더블리프면 면적 2배
+        let wallAreaM2 = (totalLenMm / 1000) * (hMm / 1000) * leafMultiplier; 
         let baseType = baseWallType.value;
-        
         let materials = [];
         if (baseType === 'alc75') materials.push({ name: 'ALC 75T', value: Math.ceil(wallAreaM2 / 0.18), unit: '장' });
         else if (baseType === 'alc100') materials.push({ name: 'ALC 100T', value: Math.ceil(wallAreaM2 / 0.18), unit: '장' });
-        else if (baseType === 'stud') {
-            let studLenMm = ((totalLenMm * 2) + ((Math.ceil(totalLenMm / 450) + totalNodes) * hMm)) * leafMultiplier;
-            materials.push({ name: '투바이포 (3.6m)', value: Math.ceil(studLenMm / 3600), unit: '개' });
-        }
+        else if (baseType === 'stud') materials.push({ name: '투바이포 (3.6m)', value: Math.ceil(((totalLenMm*2)+((Math.ceil(totalLenMm/450)+totalNodes)*hMm))*leafMultiplier/3600), unit: '개' });
         if (chkGypsum95.checked) materials.push({ name: '일반석고 9.5T', value: Math.ceil(wallAreaM2 / 1.62), unit: '장' });
         if (chkGypsum125.checked) materials.push({ name: '차음석고 12.5T', value: Math.ceil(wallAreaM2 / 1.62), unit: '장' });
         if (insulationType.value !== 'none') materials.push({ name: insulationType.options[insulationType.selectedIndex].text.split(' ')[0], value: Math.ceil(wallAreaM2 / 0.45), unit: '매' });
-
-        html += `<div class="material-card">
-            <div class="material-title">총 자재 소요량 합계 ${leafMultiplier === 2 ? '<span style="color:var(--danger); font-size:12px; margin-left:5px;">(더블리프 x2 적용됨)</span>' : ''}</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">총 벽둘레: ${(totalLenMm/1000).toFixed(2)}m / 총 바닥면적: ${totalAreaSqM.toFixed(2)}㎡</div>
-            <div class="material-grid">`;
-        
-        materials.forEach(m => {
-            html += `<div class="material-item">
-                <div class="material-item-title">${m.name}</div>
-                <div class="material-item-value">${m.value}<span>${m.unit}</span></div>
-            </div>`;
-        });
-        
-        html += `</div></div></div>`;
-
-        if (!isScaleSet) html += `<div style="text-align:center; margin-top:10px;"><span style="color:var(--danger); font-size:12px; font-weight:bold;">※ 척도를 먼저 설정해야 정확합니다.</span></div>`;
-
+        html += `<div class="material-card"><div class="material-title">총 소요량 합계 ${leafMultiplier === 2 ? 'x2' : ''}</div><div style="font-size:11px; color:var(--text-muted); margin-bottom:12px; text-align:center;">Total Perimeter: ${(totalLenMm/1000).toFixed(2)}m / Area: ${totalAreaSqM.toFixed(2)}㎡</div><div class="material-grid">`;
+        materials.forEach(m => { html += `<div class="material-item"><div class="material-item-title">${m.name}</div><div class="material-item-value">${m.value}<span>${m.unit}</span></div></div>`; });
+        html += `</div></div>`;
         resultsArea.innerHTML = html;
     }
-
     resizeCanvas();
 </script>
 </body>
