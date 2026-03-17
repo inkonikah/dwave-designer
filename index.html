@@ -1,139 +1,147 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DWave Designer</title>
+    <title>DWave Designer Pro - v7.0</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: #1e1e1e; color: #fff; }
+        
+        /* 왼쪽 설정창 */
+        .sidebar { width: 400px; padding: 25px; background: #2c2c2c; border-right: 1px solid #444; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+        
+        /* 오른쪽 결과창 */
+        .main { flex: 1; padding: 40px; background: #f5f5f5; color: #333; overflow-y: auto; }
 
-<style>
+        h1 { color: #3498db; font-size: 24px; margin-bottom: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h3 { font-size: 16px; margin-top: 25px; color: #ecf0f1; display: flex; align-items: center; }
+        .step-num { background: #3498db; color: #fff; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; }
 
-body{
-font-family:Arial;
-margin:40px;
-}
+        .input-group { background: #383838; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 13px; color: #bbb; }
+        
+        input[type=number], input[type=file], select { 
+            width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 5px; border: 1px solid #555; 
+            background: #fff; color: #000; font-weight: bold; box-sizing: border-box;
+        }
 
-.container{
-display:flex;
-gap:40px;
-}
+        button#generate { 
+            width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; 
+            font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px;
+        }
+        button#generate:hover { background: #219150; transform: translateY(-2px); }
 
-.left{
-width:300px;
-}
-
-.right{
-flex:1;
-border:1px solid #ccc;
-height:500px;
-padding:20px;
-}
-
-input,select{
-width:100%;
-margin-bottom:10px;
-padding:6px;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:10px;
-}
-
-.room{
-width:120px;
-height:80px;
-border:2px solid black;
-display:inline-flex;
-align-items:center;
-justify-content:center;
-margin:10px;
-font-weight:bold;
-}
-
-</style>
-
+        /* 결과물 디자인 */
+        .room-result { 
+            background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; 
+            border-left: 10px solid #3498db; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .room-name { font-size: 20px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+        .mat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+        .mat-item { background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px solid #eee; }
+        .mat-label { font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }
+        .mat-qty { font-size: 18px; font-weight: bold; color: #e67e22; }
+    </style>
 </head>
 
 <body>
 
-<h1>DWave Designer</h1>
+<div class="sidebar">
+    <h1>DWave Designer</h1>
 
-<div class="container">
+    <div class="input-group">
+        <h3><span class="step-num">1</span>도면 업로드</h3>
+        <input type="file" id="blueprint">
+    </div>
 
-<div class="left">
+    <div class="input-group">
+        <h3><span class="step-num">2</span>공통 높이 설정 (m)</h3>
+        <label>슬라브-슬라브 높이</label>
+        <input type="number" id="baseHeight" value="2.7" step="0.1">
+    </div>
 
-<h3>Studio Plan Upload</h3>
-<input type="file">
+    <div class="input-group">
+        <h3><span class="step-num">3</span>시공 방식 설정</h3>
+        
+        <label>ALC 시공 횟수</label>
+        <select id="alcMethod">
+            <option value="1">싱글 (한 번 돌리기)</option>
+            <option value="2">더블 (두 번 돌리기)</option>
+            <option value="0">ALC 제외</option>
+        </select>
 
-<h3>Studio Type</h3>
+        <label>차음 등급</label>
+        <select id="soundLevel">
+            <option value="1">일반 (생활 소음)</option>
+            <option value="2" selected>스튜디오 (표준 차음)</option>
+            <option value="3">프로 (드럼/악기실 등)</option>
+        </select>
 
-<select>
-<option>Post Production Studio</option>
-<option>Recording Studio</option>
-<option>Mixing Stage</option>
-<option>Color Grading Suite</option>
-</select>
+        <label>투바이 간격</label>
+        <select id="studSpacing">
+            <option value="450">450mm (표준)</option>
+            <option value="300">300mm (강화)</option>
+        </select>
+    </div>
 
-<h3>Room Configuration</h3>
+    <div class="input-group">
+        <h3><span class="step-num">4</span>구성실 개수</h3>
+        <label>ADR Room</label> <input type="number" class="room-qty" value="1">
+        <label>Mixing Room</label> <input type="number" class="room-qty" value="1">
+        <label>Editing Room</label> <input type="number" class="room-qty" value="2">
+    </div>
 
-ADR Room
-<input type="number" value="1">
-
-Mixing Room
-<input type="number" value="1">
-
-Editing Room
-<input type="number" value="2">
-
-Office
-<input type="number" value="1">
-
-Machine Room
-<input type="number" value="1">
-
-<button id="generate">Generate Layout</button>
-
+    <button id="generate">물량 산출 및 레이아웃 생성</button>
 </div>
 
-<div class="right" id="layout">
-2D Layout will appear here
-</div>
-
+<div class="main" id="layout">
+    <div style="text-align: center; margin-top: 150px; color: #bbb;">
+        <h2>STEP 1~4를 완료하고 버튼을 눌러주세요.</h2>
+        <p>현장 데이터 기반 자재 산출서가 이곳에 출력됩니다.</p>
+    </div>
 </div>
 
 <script>
+document.getElementById("generate").onclick = function() {
+    const h = parseFloat(document.getElementById("baseHeight").value);
+    const alc = parseInt(document.getElementById("alcMethod").value);
+    const sound = parseInt(document.getElementById("soundLevel").value);
+    const spacing = parseInt(document.getElementById("studSpacing").value);
+    
+    const qtys = document.querySelectorAll(".room-qty");
+    const roomNames = ["ADR", "MIX", "EDIT"];
+    
+    const layout = document.getElementById("layout");
+    layout.innerHTML = "<h1>현장 자재 산출 리포트</h1>";
 
-document.getElementById("generate").onclick=function(){
+    roomNames.forEach((name, index) => {
+        const count = parseInt(qtys[index].value);
+        
+        for(let i=0; i < count; i++) {
+            // 임시 면적 계산 (도면 분석 전 가상 데이터: 4mx3m 기준)
+            const area = 12; 
+            const perimeter = 14; 
+            const wallArea = perimeter * h;
 
-const inputs=document.querySelectorAll("input[type=number]")
+            // 자재 산출 로직 적용
+            const alcQty = alc > 0 ? Math.ceil((wallArea / 0.24) * alc * 1.05) : 0;
+            const studQty = Math.ceil((perimeter / (spacing/1000)) * sound * 1.1);
+            const boardQty = Math.ceil((wallArea / 1.62) * sound * 2 * 1.05); // 양면 시공 기준
 
-const adr=inputs[0].value
-const mix=inputs[1].value
-const edit=inputs[2].value
-const office=inputs[3].value
-const machine=inputs[4].value
-
-const layout=document.getElementById("layout")
-
-layout.innerHTML=""
-
-function room(name){
-
-const div=document.createElement("div")
-div.className="room"
-div.innerText=name
-
-layout.appendChild(div)
-
+            const div = document.createElement("div");
+            div.className = "room-result";
+            div.innerHTML = `
+                <div class="room-name">${name} Room #${i+1}</div>
+                <div style="font-size: 13px; color: #666;">설정: 층고 ${h}m | ALC ${alc}회 | 차음등급 ${sound}</div>
+                <div class="mat-grid">
+                    <div class="mat-item"><div class="mat-label">ALC 블록</div><div class="mat-qty">${alcQty} 장</div></div>
+                    <div class="mat-item"><div class="mat-label">투바이 (3.6m)</div><div class="mat-qty">${studQty} 본</div></div>
+                    <div class="mat-item"><div class="mat-label">석고보드 (900*1800)</div><div class="mat-qty">${boardQty} 매</div></div>
+                    <div class="mat-item"><div class="mat-label">우레탄폼/본드</div><div class="mat-qty">약 ${Math.ceil(alcQty/20)} 개</div></div>
+                </div>
+            `;
+            layout.appendChild(div);
+        }
+    });
 }
-
-for(let i=0;i<adr;i++) room("ADR")
-for(let i=0;i<mix;i++) room("MIX")
-for(let i=0;i<edit;i++) room("EDIT")
-for(let i=0;i<office;i++) room("OFFICE")
-for(let i=0;i<machine;i++) room("MACHINE")
-
-}
-
 </script>
 
 </body>
