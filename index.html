@@ -1,46 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DWave Designer v24.0 - Final Tool</title>
+    <title>DWave Designer v25.0 - Final Pro Tool</title>
     <style>
-        :root { --bg: #121212; --accent: #27ae60; --blue: #3498db; }
+        :root { --bg: #121212; --panel: #1e1e1e; --accent: #27ae60; --blue: #3498db; }
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: #121212; color: #fff; overflow: hidden; }
         
         /* 작업 영역 (도면) */
-        .canvas-area { flex: 1; position: relative; background: #333; overflow: hidden; }
+        .canvas-area { flex: 1; position: relative; background: #222; overflow: hidden; }
         canvas { background: #fff; transform-origin: 0 0; cursor: crosshair; }
 
-        /* 도구 상자 */
-        .tool-bar { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 20px; border-radius: 15px; z-index: 100; border: 1px solid #444; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #fff; font-size: 14px; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+        /* 왼쪽 컨트롤 타워 */
+        .tool-bar { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; z-index: 100; border: 1px solid #444; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow-y: auto; max-height: 90vh; }
+        .section-title { font-size: 14px; color: var(--blue); margin: 15px 0 8px 0; border-bottom: 1px solid #333; padding-bottom: 5px; font-weight: bold; }
         
-        /* 오른쪽 리포트 사이드바 */
-        .sidebar { width: 420px; background: #f0f2f5; color: #333; padding: 25px; overflow-y: auto; border-left: 2px solid #444; }
-        .room-card { background: #fff; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-left: 10px solid var(--blue); box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
-        .room-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .val { color: #c0392b; font-weight: bold; font-size: 1.1em; }
-        .del-btn { background: #e74c3c; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 8px; color: #fff; font-size: 13px; transition: 0.2s; }
+        
+        /* 입력창 스타일 */
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #2c2c2c; color: #fff; font-weight: bold; box-sizing: border-box; }
 
-        input[type="file"] { margin-bottom: 15px; color: #fff; font-size: 12px; width: 100%; }
-        .status-info { font-size: 12px; color: #aaa; margin-top: 15px; line-height: 1.6; background: #222; padding: 10px; border-radius: 8px; }
+        /* 오른쪽 실시간 리포트 */
+        .sidebar { width: 420px; background: #f4f7f6; color: #333; padding: 25px; overflow-y: auto; border-left: 2px solid #444; }
+        .room-card { background: white; border-radius: 12px; padding: 18px; margin-bottom: 20px; border-left: 10px solid var(--blue); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+        .res-val { color: #c0392b; font-weight: bold; font-size: 1.1em; }
+        .del-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right; font-size: 11px; }
+
+        .status-box { font-size: 11px; color: #888; background: #000; padding: 10px; border-radius: 8px; margin-top: 15px; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <div class="tool-bar">
-    <h2 style="margin:0 0 15px 0; color:var(--blue);">DWave Pro v24.0</h2>
-    <input type="file" id="up" accept="image/*">
+    <h2 style="margin:0 0 15px 0; color:var(--blue);">DWave Pro v25.0</h2>
     
-    <button class="btn" style="background:#f1c40f; color:#000;" onclick="setMode('scale')">📏 1단계: 도면 1m 기준 긋기</button>
-    <button class="btn" style="background:var(--accent);" onclick="setMode('room')">🏠 2단계: 방 영역 그리기</button>
-    <button class="btn" style="background:#7f8c8d;" onclick="resetAll()">🧼 전체 초기화</button>
+    <div class="input-group">
+        <label>도면 이미지 업로드</label>
+        <input type="file" id="up" accept="image/*">
+    </div>
+
+    <div class="section-title">Step 1. 척도 및 모드</div>
+    <button class="btn" style="background:#f1c40f; color:#000;" onclick="setMode('scale')">📐 1m 기준 척도 설정</button>
+    <button class="btn" style="background:var(--accent);" onclick="setMode('room')">🏠 방 영역 그리기 모드</button>
+
+    <div class="section-title">Step 2. 시공 공통 설정</div>
+    <div class="input-group">
+        <label>기본 층고 (H)</label>
+        <input type="number" id="baseH" value="2.7" step="0.1" onchange="update()">
+    </div>
+    <div class="input-group">
+        <label>ALC 시공 횟수</label>
+        <select id="baseAlc" onchange="update()">
+            <option value="1">싱글 (1회)</option>
+            <option value="2" selected>더블 (2회)</option>
+            <option value="0">미시공</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <label>공기층(Air Gap) mm</label>
+        <input type="number" id="baseGap" value="50" onchange="update()">
+    </div>
+    <div class="input-group">
+        <label>벽체 마감 타입</label>
+        <select id="baseLeaf" onchange="update()">
+            <option value="single">일반 마감</option>
+            <option value="double">더블 리프(Double Leaf)</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <label>석고 겹수</label>
+        <select id="baseGyp" onchange="update()">
+            <option value="1">1P</option>
+            <option value="2" selected>2P</option>
+            <option value="4">4P (양면2P)</option>
+        </select>
+    </div>
+
+    <button class="btn" style="background:#e74c3c; margin-top:10px;" onclick="resetAll()">🧼 전체 초기화</button>
     
-    <div class="status-info">
+    <div class="status-box">
         현재 모드: <b id="modeTxt" style="color:var(--blue);">방 그리기</b><br>
-        * <b>휠(Wheel)</b>: 도면 확대/축소<br>
-        * <b>우클릭 드래그</b>: 도면 이동<br>
-        * <b>좌클릭 드래그</b>: 측정 및 그리기
+        * 휠: 줌 | 우클릭 드래그: 이동<br>
+        * 척도 설정 후 방을 그리세요.
     </div>
 </div>
 
@@ -49,9 +91,9 @@
 </div>
 
 <div class="sidebar">
-    <h2 style="margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px;">실시간 자재 산출서</h2>
+    <h2 style="margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px;">실시간 자재 산출</h2>
     <div id="roomContainer">
-        <p style="color:#999; text-align:center; margin-top:50px;">도면을 업로드하고 척도를 맞춘 뒤<br>방 영역을 지정해 주세요.</p>
+        <p style="text-align:center; color:#999; margin-top:50px;">도면 로드 및 척도 설정 후<br>영역을 그려주세요.</p>
     </div>
 </div>
 
@@ -62,143 +104,105 @@
     let scalePxM = 100, zoom = 1, offX = 0, offY = 0;
     let sx, sy;
 
-    // 1. 도면 파일 업로드
     document.getElementById('up').onchange = (e) => {
         const r = new FileReader();
-        r.onload = (v) => { 
-            img.onload = () => { 
-                cvs.width = img.width; 
-                cvs.height = img.height; 
-                // 화면 중앙 정렬 초기값
-                offX = (window.innerWidth - 420 - img.width) / 2;
-                update(); 
-            }; 
-            img.src = v.target.result; 
-        };
+        r.onload = (v) => { img.onload = () => { cvs.width = img.width; cvs.height = img.height; update(); }; img.src = v.target.result; };
         r.readAsDataURL(e.target.files[0]);
     };
 
-    // 2. 줌 기능 (마우스 휠)
-    window.addEventListener('wheel', (e) => {
-        const speed = 0.1;
-        const oldZoom = zoom;
-        if (e.deltaY < 0) zoom *= 1.1;
-        else zoom /= 1.1;
-        update();
-    }, {passive: false});
-
-    // 3. 우클릭 메뉴 방지 및 드로잉 로직
+    window.addEventListener('wheel', (e) => { zoom *= (e.deltaY > 0 ? 0.9 : 1.1); update(); }, {passive: false});
     cvs.oncontextmenu = (e) => e.preventDefault();
     
     cvs.onmousedown = (e) => {
         const mx = (e.offsetX - offX) / zoom;
         const my = (e.offsetY - offY) / zoom;
-        if(e.button === 0) { // 좌클릭 시작
-            isDown = true; 
-            sx = mx; 
-            sy = my; 
-        }
+        if(e.button === 0) { isDown = true; sx = mx; sy = my; }
     };
 
     window.onmousemove = (e) => {
         const mx = (e.offsetX - offX) / zoom;
         const my = (e.offsetY - offY) / zoom;
-        
         if (isDown) {
             update();
             ctx.setTransform(zoom, 0, 0, zoom, offX, offY);
             if(mode === 'scale') {
                 ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 4/zoom;
                 ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(mx, my); ctx.stroke();
-                const d = Math.sqrt(Math.pow(mx-sx, 2) + Math.pow(my-sy, 2)) / scalePxM;
-                ctx.fillStyle = "#f1c40f"; ctx.fillText(`측정: ${d.toFixed(2)}m`, mx, my);
             } else {
                 ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2/zoom;
                 ctx.strokeRect(sx, sy, mx - sx, my - sy);
-                // 선 위에 실시간 치수 표시
                 const wM = Math.abs(mx - sx) / scalePxM;
                 const dM = Math.abs(my - sy) / scalePxM;
                 ctx.fillStyle = "#3498db"; ctx.font = `bold ${16/zoom}px Arial`;
                 ctx.fillText(`${wM.toFixed(2)}m x ${dM.toFixed(2)}m`, sx, sy - 10/zoom);
             }
         }
-        // 우클릭 팬 이동
-        if (e.buttons === 2) {
-            offX += e.movementX;
-            offY += e.movementY;
-            update();
-        }
+        if (e.buttons === 2) { offX += e.movementX; offY += e.movementY; update(); }
     };
 
     window.onmouseup = (e) => {
-        if (!isDown) return; 
-        isDown = false;
+        if (!isDown) return; isDown = false;
         const ex = (e.offsetX - offX) / zoom;
         const ey = (e.offsetY - offY) / zoom;
-        const dist = Math.sqrt(Math.pow(ex-sx, 2) + Math.pow(ey-sy, 2));
-
         if(mode === 'scale') {
-            const m = prompt("방금 그은 노란 선의 실제 길이는 몇 m인가요? (도면 치수 입력)", "1");
-            if(m) {
-                scalePxM = dist / parseFloat(m);
-                alert("기준 척도가 설정되었습니다. 이제 방을 그리세요.");
-                setMode('room');
-            }
+            const dist = Math.sqrt(Math.pow(ex-sx, 2) + Math.pow(ey-sy, 2));
+            const m = prompt("방금 그은 선의 실제 길이는 몇 m인가요?", "1");
+            if(m) scalePxM = dist / parseFloat(m);
         } else {
             const wM = Math.abs(ex - sx) / scalePxM;
             const dM = Math.abs(ey - sy) / scalePxM;
-            if(wM > 0.1) {
-                rooms.push({ id: Date.now(), sx, sy, w: ex-sx, d: ey-sy, rw: wM, rd: dM });
-            }
+            if(wM > 0.1) rooms.push({ id: Date.now(), sx, sy, w: ex-sx, d: ey-sy, rw: wM, rd: dM });
         }
         update();
     };
 
-    function setMode(m) { 
-        mode = m; 
-        document.getElementById('modeTxt').innerText = m === 'scale' ? "척도 설정 중..." : "방 그리기"; 
-    }
-
-    function resetAll() { if(confirm("모든 데이터를 지우시겠습니까?")) { rooms = []; update(); } }
-    function delRoom(id) { rooms = rooms.filter(r => r.id !== id); update(); }
+    function setMode(m) { mode = m; document.getElementById('modeTxt').innerText = m === 'scale' ? "척도 설정 중" : "방 그리기"; }
+    function resetAll() { if(confirm("초기화할까요?")) { rooms = []; update(); } }
+    function del(id) { rooms = rooms.filter(r => r.id !== id); update(); }
 
     function update() {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, cvs.width, cvs.height);
         ctx.setTransform(zoom, 0, 0, zoom, offX, offY);
-        
         if(img.src) ctx.drawImage(img, 0, 0);
         
-        // 그려진 방 표시
         rooms.forEach((r, i) => {
             ctx.strokeStyle = '#27ae60'; ctx.lineWidth = 3/zoom;
             ctx.strokeRect(r.sx, r.sy, r.w, r.d);
             ctx.fillStyle = 'rgba(39, 174, 96, 0.15)'; ctx.fillRect(r.sx, r.sy, r.w, r.d);
             ctx.fillStyle = '#000'; ctx.font = `bold ${14/zoom}px Arial`;
-            ctx.fillText(`Room #${i+1} (${r.rw.toFixed(2)}m x ${r.rd.toFixed(2)}m)`, r.sx + 5/zoom, r.sy + 18/zoom);
+            ctx.fillText(`Room #${i+1}`, r.sx + 5/zoom, r.sy + 18/zoom);
         });
 
-        // 우측 리포트 업데이트
+        // 리포트 업데이트
+        const h = parseFloat(document.getElementById('baseH').value);
+        const alc = parseInt(document.getElementById('baseAlc').value);
+        const gap = document.getElementById('baseGap').value;
+        const leaf = document.getElementById('baseLeaf').value;
+        const gyp = parseInt(document.getElementById('baseGyp').value);
+        
         const container = document.getElementById('roomContainer');
         container.innerHTML = "";
         
         rooms.forEach((r, i) => {
             const peri = (r.rw + r.rd) * 2;
-            const area = peri * 2.7; // 기본 층고 2.7m
-            const div = document.createElement('div');
-            div.className = 'room-card';
-            div.innerHTML = `
-                <div class="room-title">
-                    <span>#${i+1} 공간 (${r.rw.toFixed(2)}m x ${r.rd.toFixed(2)}m)</span>
-                    <button class="del-btn" onclick="delRoom(${r.id})">삭제</button>
-                </div>
-                둘레: ${peri.toFixed(2)}m / 벽체면적: ${area.toFixed(1)}㎡<br>
-                <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ddd;">
-                    ALC(더블): <span class="val">${Math.ceil(area/0.24*2*1.05)}장</span><br>
-                    투바이(450): <span class="val">${Math.ceil(peri/0.45*1.1)}본</span> / 석고(4P): <span class="val">${Math.ceil(area/1.62*4*1.1)}매</span>
+            const area = peri * h;
+            const alcQty = Math.ceil((area / 0.24) * alc * 1.05);
+            const woodQty = Math.ceil((peri / 0.45 * (leaf === 'double' ? 2 : 1)) * 1.1);
+            const gypQty = Math.ceil((area / 1.62) * gyp * 1.1);
+
+            const card = document.createElement('div');
+            card.className = 'room-card';
+            card.innerHTML = `
+                <button class="del-btn" onclick="del(${r.id})">삭제</button>
+                <div style="font-weight:bold; color:#3498db; margin-bottom:10px;">#${i+1} 공간 (${r.rw.toFixed(2)}m x ${r.rd.toFixed(2)}m)</div>
+                <div style="font-size:12px; line-height:1.6;">
+                    설정: H ${h}m | ALC ${alc}회 | 공기층 ${gap}mm | ${leaf==='double'?'더블리프':'일반'}<br>
+                    둘레: ${peri.toFixed(2)}m / 면적: ${area.toFixed(1)}㎡<br>
+                    <b>ALC: <span class="res-val">${alcQty}장</span> / 투바이: <span class="res-val">${woodQty}본</span> / 석고: <span class="res-val">${gypQty}매</span></b>
                 </div>
             `;
-            container.appendChild(div);
+            container.appendChild(card);
         });
     }
 </script>
