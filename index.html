@@ -1,225 +1,501 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>DWave Designer v25.0 - Final Pro Tool</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도면 측정 및 자재 산출 프로그램</title>
     <style>
-        :root { --bg: #121212; --panel: #1e1e1e; --accent: #27ae60; --blue: #3498db; }
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: #121212; color: #fff; overflow: hidden; }
-        
-        /* 1. 왼쪽 컨트롤 타워 (설정창 핵심) */
-        .sidebar-left { width: 340px; background: rgba(0,0,0,0.9); padding: 25px; border-right: 1px solid #444; overflow-y: auto; z-index: 100; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
-        .section-title { font-size: 14px; color: var(--blue); margin: 20px 0 10px 0; border-bottom: 2px solid #333; padding-bottom: 5px; font-weight: bold; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #fff; font-size: 14px; transition: 0.2s; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 6px; }
-        input, select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #2c2c2c; color: #fff; font-weight: bold; box-sizing: border-box; }
-
-        /* 2. 중앙 도면 드로잉 영역 */
-        .canvas-area { flex: 1; position: relative; background: #222; overflow: hidden; }
-        canvas { background: #fff; transform-origin: 0 0; cursor: crosshair; }
-
-        /* 3. 오른쪽 실시간 산출서 */
-        .sidebar-right { width: 420px; background: #f4f7f6; color: #333; padding: 25px; overflow-y: auto; border-left: 2px solid #444; }
-        .room-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 10px solid var(--blue); box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
-        .res-val { color: #c0392b; font-weight: bold; font-size: 1.1em; }
-        .del-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; float: right; font-size: 11px; font-weight: bold; }
-
-        .status-box { font-size: 11px; color: #777; background: #000; padding: 12px; border-radius: 8px; margin-top: 20px; line-height: 1.6; border: 1px solid #333; }
+        body { margin: 0; padding: 0; display: flex; height: 100vh; font-family: 'Malgun Gothic', sans-serif; overflow: hidden; background-color: #f0f0f0; }
+        #sidebar { width: 350px; background: #fff; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 10; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; cursor: crosshair; }
+        canvas { display: block; }
+        h2, h3 { margin: 0 0 10px 0; font-size: 16px; color: #333; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        .form-group label { font-size: 13px; font-weight: bold; }
+        .form-group input[type="number"], .form-group select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 5px; }
+        button { padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button:hover { background-color: #0056b3; }
+        button.active { background-color: #dc3545; }
+        .result-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e9ecef; font-size: 14px; line-height: 1.6; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
+        .shortcut-info { font-size: 12px; color: #666; background: #e9ecef; padding: 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-<div class="sidebar-left">
-    <h2 style="margin:0 0 20px 0; color:var(--blue); border-bottom:3px solid var(--blue); padding-bottom:10px;">DWave Pro v25.0</h2>
+<div id="sidebar">
+    <h2>도면 측정 & 자재 산출</h2>
     
-    <div class="input-group">
-        <label>📁 도면 이미지 업로드</label>
-        <input type="file" id="up" accept="image/*">
+    <div class="form-group">
+        <label>1. 도면 이미지 불러오기</label>
+        <input type="file" id="imageLoader" accept="image/*">
     </div>
 
-    <div class="section-title">Step 1. 척도 및 모드</div>
-    <button class="btn" style="background:#f1c40f; color:#000;" onclick="setMode('scale')">📏 1m 기준 척도 설정</button>
-    <button class="btn" style="background:var(--accent);" onclick="setMode('room')">🏠 방 영역 그리기 모드</button>
-
-    <div class="section-title">Step 2. 시공 상세 설정 (공통)</div>
-    <div class="input-group">
-        <label>기본 층고 (H)</label>
-        <input type="number" id="baseH" value="2.7" step="0.1" onchange="update()">
-    </div>
-    <div class="input-group">
-        <label>ALC 시공 횟수</label>
-        <select id="baseAlc" onchange="update()">
-            <option value="1">싱글 (1회)</option>
-            <option value="2" selected>더블 (2회)</option>
-            <option value="0">미시공</option>
-        </select>
-    </div>
-    <div class="input-group">
-        <label>공기층(Air Gap) mm</label>
-        <input type="number" id="baseGap" value="50" onchange="update()">
-    </div>
-    <div class="input-group">
-        <label>벽체 구조 타입</label>
-        <select id="baseLeaf" onchange="update()">
-            <option value="single">일반 마감</option>
-            <option value="double">더블 리프(Double Leaf)</option>
-        </select>
-    </div>
-    <div class="input-group">
-        <label>석고 겹수 (전체)</label>
-        <select id="baseGyp" onchange="update()">
-            <option value="1">1P</option>
-            <option value="2" selected>2P</option>
-            <option value="4">4P (양면 2P)</option>
-        </select>
+    <div class="form-group">
+        <button id="btnCalibrate">2. 척도 설정 (기준선 긋기)</button>
+        <span id="scaleStatus" style="font-size: 12px; color: red;">척도 미설정 (화면 픽셀 기준)</span>
     </div>
 
-    <button class="btn" style="background:#e74c3c; margin-top:20px;" onclick="resetAll()">🧼 전체 데이터 초기화</button>
+    <div class="form-group">
+        <button id="btnDraw">3. 방 그리기 (다각형)</button>
+        <button id="btnFinishLine" style="background-color: #28a745;">선 그리기 완료 (열린 도형)</button>
+        <button id="btnUndo" style="background-color: #6c757d;">실행 취소 (Ctrl+Z)</button>
+        <button id="btnClear" style="background-color: #343a40;">초기화</button>
+    </div>
+
+    <hr>
+    <h3>벽체 구성 및 자재 설정</h3>
+    <div class="form-group">
+        <label>벽 높이 (mm)</label>
+        <input type="number" id="wallHeight" value="2400" step="100">
+    </div>
+
+    <div class="form-group">
+        <label>기본 골조 (벽체 기준)</label>
+        <select id="baseWallType">
+            <option value="alc75">ALC 블록 75T</option>
+            <option value="alc100">ALC 블록 100T</option>
+            <option value="stud">목상 (투바이포 2x4)</option>
+            <option value="none">없음 (기존 벽체)</option>
+        </select>
+    </div>
     
-    <div class="status-box">
-        <b>현재 모드:</b> <span id="modeTxt" style="color:var(--blue); font-weight:bold;">방 그리기</span><br>
-        * <b>마우스 휠</b>: 도면 확대/축소<br>
-        * <b>우클릭 드래그</b>: 도면 이동<br>
-        * <b>좌클릭 드래그</b>: 측정 및 그리기
+    <div class="form-group">
+        <label>부착할 마감재 (중복 선택 가능)</label>
+        <div class="checkbox-group">
+            <input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반 석고보드 9.5T</label>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음 석고보드 12.5T</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>충진재 선택 (목상 적용 시 등):</label>
+        <select id="insulationType">
+            <option value="none">사용 안 함</option>
+            <option value="glasswool">글라스울</option>
+            <option value="rockwool">락울</option>
+        </select>
+    </div>
+
+    <hr>
+    <h3>측정 및 산출 결과</h3>
+    <div id="results" class="result-box">
+        도면을 그려주세요.
+    </div>
+
+    <div class="shortcut-info">
+        <strong>단축키 및 조작법</strong><br>
+        - 화면 이동: <b>'H' 키 누른 상태로 마우스 드래그</b><br>
+        - 화면 확대/축소: <b>마우스 휠</b><br>
+        - 직선 긋기: <b>'Shift' 키 누르고 클릭</b><br>
+        - 첫 점 클릭 시 자동 닫힘 (면적 계산)
     </div>
 </div>
 
-<div class="canvas-area">
-    <canvas id="cvs"></canvas>
-</div>
-
-<div class="sidebar-right">
-    <h2 style="margin-top:0; border-bottom:3px solid var(--accent); padding-bottom:10px;">실시간 자재 산출서</h2>
-    <div id="roomContainer">
-        <p style="text-align:center; color:#999; margin-top:100px;">도면을 불러온 뒤 척도를 맞추고<br>방 영역을 지정해 주세요.</p>
-    </div>
+<div id="canvas-container">
+    <canvas id="canvas"></canvas>
 </div>
 
 <script>
-    const cvs = document.getElementById('cvs');
-    const ctx = cvs.getContext('2d');
-    let img = new Image(), rooms = [], mode = 'room', isDown = false;
-    let scalePxM = 100, zoom = 1, offX = 0, offY = 0;
-    let sx, sy;
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
 
-    // 이미지 업로드 로직
-    document.getElementById('up').onchange = (e) => {
-        const r = new FileReader();
-        r.onload = (v) => { 
-            img.onload = () => { 
-                cvs.width = img.width; 
-                cvs.height = img.height; 
-                offX = 50; offY = 50;
-                update(); 
-            }; 
-            img.src = v.target.result; 
-        };
-        r.readAsDataURL(e.target.files[0]);
-    };
+    // UI Elements
+    const btnCalibrate = document.getElementById('btnCalibrate');
+    const btnDraw = document.getElementById('btnDraw');
+    const btnFinishLine = document.getElementById('btnFinishLine');
+    const btnUndo = document.getElementById('btnUndo');
+    const btnClear = document.getElementById('btnClear');
+    const imageLoader = document.getElementById('imageLoader');
+    const scaleStatus = document.getElementById('scaleStatus');
+    const resultsDiv = document.getElementById('results');
 
-    // 줌/팬 제어
-    window.addEventListener('wheel', (e) => { zoom *= (e.deltaY > 0 ? 0.9 : 1.1); update(); }, {passive: false});
-    cvs.oncontextmenu = (e) => e.preventDefault();
-    
-    cvs.onmousedown = (e) => {
-        const mx = (e.offsetX - offX) / zoom;
-        const my = (e.offsetY - offY) / zoom;
-        if(e.button === 0) { isDown = true; sx = mx; sy = my; }
-    };
+    // 자재 입력 요소
+    const wallHeightInput = document.getElementById('wallHeight');
+    const baseWallType = document.getElementById('baseWallType');
+    const chkGypsum95 = document.getElementById('chkGypsum95');
+    const chkGypsum125 = document.getElementById('chkGypsum125');
+    const insulationType = document.getElementById('insulationType');
 
-    window.onmousemove = (e) => {
-        const mx = (e.offsetX - offX) / zoom;
-        const my = (e.offsetY - offY) / zoom;
-        if (isDown) {
-            update();
-            ctx.setTransform(zoom, 0, 0, zoom, offX, offY);
-            if(mode === 'scale') {
-                ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 4/zoom;
-                ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(mx, my); ctx.stroke();
-            } else {
-                ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2/zoom;
-                ctx.strokeRect(sx, sy, mx - sx, my - sy);
-                const wM = Math.abs(mx - sx) / scalePxM;
-                const dM = Math.abs(my - sy) / scalePxM;
-                ctx.fillStyle = "#3498db"; ctx.font = `bold ${16/zoom}px Arial`;
-                ctx.fillText(`${wM.toFixed(2)}m x ${dM.toFixed(2)}m`, sx, sy - 10/zoom);
+    // State Variables
+    let image = null;
+    let mode = 'idle'; // 'idle', 'calibrate', 'draw'
+    let points = [];
+    let calibratePoints = [];
+    let isClosed = false;
+    let scale = 1; // mm per pixel. Default 1
+    let isScaleSet = false;
+
+    // View Transformation
+    let panX = 0;
+    let panY = 0;
+    let zoom = 1;
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let isHKeyPressed = false;
+    let isShiftKeyPressed = false;
+    let mousePos = { x: 0, y: 0 };
+
+    // Resize 캔버스 반응형 처리
+    function resizeCanvas() {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // 도면 이미지 불러오기
+    imageLoader.addEventListener('change', (e) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            image = new Image();
+            image.onload = () => {
+                zoom = Math.min(canvas.width / image.width, canvas.height / image.height) * 0.9;
+                panX = (canvas.width - image.width * zoom) / 2;
+                panY = (canvas.height - image.height * zoom) / 2;
+                draw();
+            }
+            image.src = event.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // 화면 이동 (H 키) 및 직교 (Shift 키)
+    window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h') {
+            isHKeyPressed = true;
+            canvas.style.cursor = 'grab';
+        }
+        if (e.key === 'Shift') isShiftKeyPressed = true;
+        if (e.ctrlKey && e.key.toLowerCase() === 'z') undoAction();
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (e.key.toLowerCase() === 'h') {
+            isHKeyPressed = false;
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        }
+        if (e.key === 'Shift') isShiftKeyPressed = false;
+    });
+
+    // 마우스 이벤트
+    canvas.addEventListener('mousedown', (e) => {
+        if (isHKeyPressed || e.button === 1) { 
+            isDragging = true;
+            dragStartX = e.clientX - panX;
+            dragStartY = e.clientY - panY;
+            return;
+        }
+
+        const rect = canvas.getBoundingClientRect();
+        let x = (e.clientX - rect.left - panX) / zoom;
+        let y = (e.clientY - rect.top - panY) / zoom;
+
+        // 직교 모드 (Shift)
+        if (isShiftKeyPressed && mode === 'draw' && points.length > 0) {
+            const lastPt = points[points.length - 1];
+            const dx = Math.abs(x - lastPt.x);
+            const dy = Math.abs(y - lastPt.y);
+            if (dx > dy) y = lastPt.y; 
+            else x = lastPt.x; 
+        }
+
+        if (mode === 'calibrate') {
+            calibratePoints.push({x, y});
+            if (calibratePoints.length === 2) {
+                let pxDist = Math.hypot(calibratePoints[1].x - calibratePoints[0].x, calibratePoints[1].y - calibratePoints[0].y);
+                let actualLength = prompt("그으신 선의 실제 길이는 몇 mm 입니까?");
+                if (actualLength && !isNaN(actualLength)) {
+                    scale = parseFloat(actualLength) / pxDist;
+                    isScaleSet = true;
+                    scaleStatus.textContent = `척도 설정됨 (1px = ${scale.toFixed(2)}mm)`;
+                    scaleStatus.style.color = "green";
+                }
+                mode = 'idle';
+                calibratePoints = [];
+                btnCalibrate.classList.remove('active');
+            }
+        } else if (mode === 'draw' && !isClosed) {
+            if (points.length > 2) {
+                const firstPt = points[0];
+                const distToFirst = Math.hypot(x - firstPt.x, y - firstPt.y) * zoom;
+                if (distToFirst < 15) { 
+                    isClosed = true;
+                    updateResults();
+                    draw();
+                    return;
+                }
+            }
+            points.push({x, y});
+            updateResults();
+        }
+        draw();
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            panX = e.clientX - dragStartX;
+            panY = e.clientY - dragStartY;
+            draw();
+            return;
+        }
+        
+        const rect = canvas.getBoundingClientRect();
+        let x = (e.clientX - rect.left - panX) / zoom;
+        let y = (e.clientY - rect.top - panY) / zoom;
+        
+        if (isShiftKeyPressed && mode === 'draw' && points.length > 0) {
+            const lastPt = points[points.length - 1];
+            const dx = Math.abs(x - lastPt.x);
+            const dy = Math.abs(y - lastPt.y);
+            if (dx > dy) y = lastPt.y; 
+            else x = lastPt.x; 
+        }
+
+        mousePos = {x, y};
+        draw();
+    });
+
+    canvas.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('mouseleave', () => { isDragging = false; });
+
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomIntensity = 0.1;
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const wheel = e.deltaY < 0 ? 1 : -1;
+        let newZoom = Math.exp(wheel * zoomIntensity) * zoom;
+        
+        if (newZoom < 0.1) newZoom = 0.1;
+        if (newZoom > 10) newZoom = 10;
+
+        panX = mouseX - (mouseX - panX) * (newZoom / zoom);
+        panY = mouseY - (mouseY - panY) * (newZoom / zoom);
+        zoom = newZoom;
+        
+        draw();
+    }, { passive: false });
+
+    // 버튼 액션
+    btnCalibrate.addEventListener('click', () => {
+        mode = 'calibrate';
+        calibratePoints = [];
+        btnCalibrate.classList.add('active');
+        btnDraw.classList.remove('active');
+    });
+
+    btnDraw.addEventListener('click', () => {
+        mode = 'draw';
+        isClosed = false;
+        points = [];
+        updateResults();
+        btnDraw.classList.add('active');
+        btnCalibrate.classList.remove('active');
+    });
+
+    btnFinishLine.addEventListener('click', () => {
+        if (mode === 'draw' && points.length > 1) {
+            isClosed = false;
+            mode = 'idle';
+            btnDraw.classList.remove('active');
+            updateResults();
+            draw();
+        }
+    });
+
+    btnUndo.addEventListener('click', undoAction);
+
+    function undoAction() {
+        if (mode === 'draw' && points.length > 0 && !isClosed) {
+            points.pop();
+            updateResults();
+            draw();
+        } else if (isClosed) {
+            isClosed = false;
+            updateResults();
+            draw();
+        }
+    }
+
+    btnClear.addEventListener('click', () => {
+        points = [];
+        calibratePoints = [];
+        isClosed = false;
+        mode = 'idle';
+        btnDraw.classList.remove('active');
+        btnCalibrate.classList.remove('active');
+        updateResults();
+        draw();
+    });
+
+    // 입력값 변경 이벤트 리스너
+    [wallHeightInput, baseWallType, chkGypsum95, chkGypsum125, insulationType].forEach(el => {
+        el.addEventListener('change', updateResults);
+    });
+
+    // 렌더링
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.save();
+        ctx.translate(panX, panY);
+        ctx.scale(zoom, zoom);
+
+        if (image) ctx.drawImage(image, 0, 0);
+
+        if (calibratePoints.length > 0) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2 / zoom;
+            ctx.beginPath();
+            ctx.arc(calibratePoints[0].x, calibratePoints[0].y, 3/zoom, 0, Math.PI*2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+
+            if (mode === 'calibrate' && calibratePoints.length === 1) {
+                ctx.moveTo(calibratePoints[0].x, calibratePoints[0].y);
+                ctx.lineTo(mousePos.x, mousePos.y);
+                ctx.stroke();
             }
         }
-        if (e.buttons === 2) { offX += e.movementX; offY += e.movementY; update(); }
-    };
 
-    window.onmouseup = (e) => {
-        if (!isDown) return; isDown = false;
-        const ex = (e.offsetX - offX) / zoom;
-        const ey = (e.offsetY - offY) / zoom;
-        if(mode === 'scale') {
-            const dist = Math.sqrt(Math.pow(ex-sx, 2) + Math.pow(ey-sy, 2));
-            const m = prompt("방금 그은 노란 선의 실제 길이는 몇 m인가요? (도면 치수 입력)", "1");
-            if(m) { scalePxM = dist / parseFloat(m); setMode('room'); }
-        } else {
-            const wM = Math.abs(ex - sx) / scalePxM;
-            const dM = Math.abs(ey - sy) / scalePxM;
-            if(wM > 0.1) rooms.push({ id: Date.now(), sx, sy, w: ex-sx, d: ey-sy, rw: wM, rd: dM });
+        if (points.length > 0) {
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 3 / zoom;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            
+            if (isClosed) {
+                ctx.lineTo(points[0].x, points[0].y);
+                ctx.fillStyle = 'rgba(0, 123, 255, 0.2)';
+                ctx.fill();
+            } else if (mode === 'draw') {
+                ctx.lineTo(mousePos.x, mousePos.y);
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = '#0056b3';
+            ctx.lineWidth = 1.5 / zoom;
+            for (let pt of points) {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 4 / zoom, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
         }
-        update();
-    };
 
-    function setMode(m) { 
-        mode = m; 
-        document.getElementById('modeTxt').innerText = m === 'scale' ? "척도 설정 중..." : "방 그리기"; 
+        ctx.restore();
     }
 
-    function resetAll() { if(confirm("모든 데이터를 삭제할까요?")) { rooms = []; update(); } }
-    function del(id) { rooms = rooms.filter(r => r.id !== id); update(); }
+    // 계산 및 산출
+    function updateResults() {
+        if (points.length < 2) {
+            resultsDiv.innerHTML = "도면을 그려주세요.";
+            return;
+        }
 
-    function update() {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, cvs.width, cvs.height);
-        ctx.setTransform(zoom, 0, 0, zoom, offX, offY);
-        if(img.src) ctx.drawImage(img, 0, 0);
-        
-        rooms.forEach((r, i) => {
-            ctx.strokeStyle = '#27ae60'; ctx.lineWidth = 3/zoom;
-            ctx.strokeRect(r.sx, r.sy, r.w, r.d);
-            ctx.fillStyle = 'rgba(39, 174, 96, 0.15)'; ctx.fillRect(r.sx, r.sy, r.w, r.d);
-            ctx.fillStyle = '#000'; ctx.font = `bold ${14/zoom}px Arial`;
-            ctx.fillText(`Room #${i+1} (${r.rw.toFixed(2)}x${r.rd.toFixed(2)}m)`, r.sx + 5/zoom, r.sy + 18/zoom);
-        });
+        let totalLengthMm = 0;
+        for (let i = 0; i < points.length - 1; i++) {
+            totalLengthMm += Math.hypot(points[i+1].x - points[i].x, points[i+1].y - points[i].y) * scale;
+        }
+        if (isClosed) {
+            totalLengthMm += Math.hypot(points[0].x - points[points.length-1].x, points[0].y - points[points.length-1].y) * scale;
+        }
 
-        const h = parseFloat(document.getElementById('baseH').value);
-        const alc = parseInt(document.getElementById('baseAlc').value);
-        const gap = document.getElementById('baseGap').value;
-        const leaf = document.getElementById('baseLeaf').value;
-        const gyp = parseInt(document.getElementById('baseGyp').value);
-        
-        const container = document.getElementById('roomContainer');
-        container.innerHTML = "";
-        
-        rooms.forEach((r, i) => {
-            const peri = (r.rw + r.rd) * 2;
-            const area = peri * h;
-            const alcQty = Math.ceil((area / 0.24) * alc * 1.05);
-            const woodQty = Math.ceil((peri / 0.45 * (leaf === 'double' ? 2 : 1)) * 1.15);
-            const gypQty = Math.ceil((area / 1.62) * gyp * 1.1);
+        let areaSqMm = 0;
+        if (isClosed) {
+            let sum1 = 0, sum2 = 0;
+            for (let i = 0; i < points.length; i++) {
+                let j = (i + 1) % points.length;
+                sum1 += (points[i].x * scale) * (points[j].y * scale);
+                sum2 += (points[j].x * scale) * (points[i].y * scale);
+            }
+            areaSqMm = Math.abs(sum1 - sum2) / 2;
+        }
 
-            const card = document.createElement('div');
-            card.className = 'room-card';
-            card.innerHTML = `
-                <button class="del-btn" onclick="del(${r.id})">삭제</button>
-                <div style="font-weight:bold; color:#3498db; margin-bottom:12px; font-size:16px;">#${i+1} 공간 (${r.rw.toFixed(2)}m x ${r.rd.toFixed(2)}m)</div>
-                <div style="font-size:13px; line-height:1.7; color:#555;">
-                    <span style="background:#eee; padding:2px 5px; border-radius:4px;">H: ${h}m / ALC: ${alc}회 / 공기층: ${gap}mm / ${leaf==='double'?'더블리프':'일반'}</span><br>
-                    벽체 둘레: <b>${peri.toFixed(2)}m</b> / 총 면적: <b>${area.toFixed(1)}㎡</b><br>
-                    <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:8px;">
-                        ALC 블록: <span class="res-val">${alcQty}장</span><br>
-                        투바이(목재): <span class="res-val">${woodQty}본</span> / 석고보드: <span class="res-val">${gypQty}매</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
+        let lengthM = (totalLengthMm / 1000).toFixed(2);
+        let areaSqM = (areaSqMm / 1000000).toFixed(2);
+        
+        let html = `<strong>총 길이(벽 둘레):</strong> ${lengthM} m<br>`;
+        if (isClosed) {
+            let pyeong = (areaSqM * 0.3025).toFixed(2);
+            html += `<strong>바닥 면적:</strong> ${areaSqM} ㎡ (${pyeong} 평)<br>`;
+        }
+        
+        // 자재 산출
+        html += `<hr><strong>[자재 산출 결과]</strong><br>`;
+        let heightMm = parseFloat(wallHeightInput.value) || 2400;
+        let totalWallAreaSqM = (totalLengthMm / 1000) * (heightMm / 1000); 
+        
+        let wallThickness = 0;
+        const gypsumBoardArea = 1.62; // 석고보드 3x6 사이즈
+        const insulationArea = 0.45;  // 단열재 일반 450x1000
+        const alcBlockArea = 0.18;    // ALC 표준면적 600x300 기준
+
+        // 골조(뼈대) 계산
+        let baseType = baseWallType.value;
+        if (baseType === 'alc75') {
+            wallThickness += 75;
+            let count = Math.ceil(totalWallAreaSqM / alcBlockArea);
+            html += `- ALC 블록 75T: 약 <b>${count}</b> 장 (600x300 기준)<br>`;
+        } else if (baseType === 'alc100') {
+            wallThickness += 100;
+            let count = Math.ceil(totalWallAreaSqM / alcBlockArea);
+            html += `- ALC 블록 100T: 약 <b>${count}</b> 장 (600x300 기준)<br>`;
+        } else if (baseType === 'stud') {
+            wallThickness += 89; 
+            let horizontalLength = totalLengthMm * 2; 
+            let verticalCount = Math.ceil(totalLengthMm / 450) + points.length; 
+            let totalStudLengthMm = horizontalLength + (verticalCount * heightMm);
+            let count = Math.ceil(totalStudLengthMm / 3600);
+            html += `- 목상(2x4 투바이포): 약 <b>${count}</b> 개 (3600mm 기준)<br>`;
+        }
+
+        // 마감재 계산
+        if (chkGypsum95.checked) {
+            wallThickness += 9.5;
+            let count = Math.ceil(totalWallAreaSqM / gypsumBoardArea);
+            html += `- 일반 석고(9.5T): 약 <b>${count}</b> 장 (3x6 기준)<br>`;
+        }
+        if (chkGypsum125.checked) {
+            wallThickness += 12.5;
+            let count = Math.ceil(totalWallAreaSqM / gypsumBoardArea);
+            html += `- 차음 석고(12.5T): 약 <b>${count}</b> 장 (3x6 기준)<br>`;
+        }
+
+        // 충진재 계산
+        if (insulationType.value !== 'none') {
+            let insName = insulationType.value === 'glasswool' ? '글라스울' : '락울';
+            let count = Math.ceil(totalWallAreaSqM / insulationArea);
+            html += `- ${insName}: 약 <b>${count}</b> 매 (450x1000 기준)<br>`;
+        }
+
+        html += `<br><strong>예상 벽체 두께:</strong> ${wallThickness} mm (공기층/본드 두께 제외)`;
+
+        if (!isScaleSet) {
+            html += `<br><br><span style="color:red; font-size:12px;">* 주의: 척도가 설정되지 않아 실제 수치와 다릅니다. 기준선을 먼저 그어주세요.</span>`;
+        }
+
+        resultsDiv.innerHTML = html;
     }
+
+    // 초기화 실행
+    resizeCanvas();
 </script>
 </body>
 </html>
