@@ -58,8 +58,10 @@
         .results-header { font-size: 18px; font-weight: 900; color: var(--dark); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--dark); }
 
         .room-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.03); position: relative; }
-        .room-header { font-weight: 800; font-size: 15px; color: var(--primary); margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .room-header { font-weight: 800; font-size: 15px; color: var(--primary); margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 5px; }
         .room-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-main); }
+        .room-data b { color: var(--dark); }
+        .wall-highlight { color: var(--success) !important; font-weight: 800; }
         
         .material-card { background: #eef2fa; border: 1px solid #d7e3fc; border-radius: 12px; padding: 18px; margin-top: 20px; }
         .material-title { font-size: 16px; font-weight: 900; color: var(--primary-hover); margin-bottom: 12px; text-align: center; }
@@ -76,10 +78,11 @@
 
         #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background-color: #f1f3f5; cursor: crosshair; }
         canvas { display: block; }
+        /* 격자 그리드 배경 */
         canvas.grid-bg { 
             background-image: 
-                linear-gradient(rgba(206, 212, 218, 0.4) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(206, 212, 218, 0.4) 1px, transparent 1px);
+                linear-gradient(rgba(206, 212, 218, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(206, 212, 218, 0.5) 1px, transparent 1px);
             background-size: 40px 40px; 
         }
     </style>
@@ -89,7 +92,7 @@
 <div id="sidebar">
     <div class="sidebar-header">
         <h2>Dwave Home</h2>
-        <p>CONSTRUCTION QUANTITY SURVEY SOLUTION</p>
+        <p>CONSTRUCTION MATERIAL TAKEOFF</p>
     </div>
     
     <div class="sidebar-content">
@@ -115,7 +118,7 @@
         </div>
 
         <div class="section-box">
-            <div class="section-title">📦 3. 자재 및 공법 사양</div>
+            <div class="section-title">📦 3. 자재 사양</div>
             <div class="form-group">
                 <label>벽 높이 (mm)</label>
                 <input type="number" id="wallHeight" value="2400" step="100">
@@ -130,11 +133,11 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>마감 자재 선택</label>
+                <label>마감재 선택</label>
                 <div class="checkbox-group"><input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반 석고 9.5T (3x6)</label></div>
                 <div class="checkbox-group"><input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음 석고 12.5T (3x6)</label></div>
                 <select id="insulationType">
-                    <option value="none">충진재 미사용</option>
+                    <option value="none">충진재 없음</option>
                     <option value="glasswool">글라스울 (450x1000)</option>
                     <option value="rockwool">락울 (450x1000)</option>
                 </select>
@@ -150,16 +153,12 @@
 
         <div id="resultsArea" class="results-container">
             <div class="results-header">Dwave 자재산출</div>
-            <div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">
-                도면을 설계하면 실시간으로<br>산출 내역이 표시됩니다.
             </div>
-        </div>
     </div>
     
     <div class="shortcut-box">
         • <b>H</b> + 드래그: 화면 이동 / <b>휠</b>: 확대 축소<br>
-        • <b>Shift</b> + 클릭: 직교 모드 (수평/수직)<br>
-        • <b>삭제 모드</b>: 도면 위 이름표나 점을 클릭하여 삭제
+        • <b>Shift</b>: 직교 모드 / <b>삭제 모드</b>: 이름표 클릭 시 삭제
     </div>
 </div>
 
@@ -191,7 +190,7 @@
     const chkDoubleLeaf = document.getElementById('chkDoubleLeaf');
 
     let image = null;
-    let mode = 'idle'; // 'idle', 'draw', 'calibrate', 'delete'
+    let mode = 'idle'; 
     let shapes = []; 
     let currentPoints = [];
     let calibPoints = [];
@@ -234,7 +233,6 @@
     window.addEventListener('keydown', (e) => {
         if (e.key.toLowerCase() === 'h') { isHDown = true; canvas.style.cursor = 'grab'; }
         if (e.key === 'Shift') isShiftDown = true;
-        if (e.ctrlKey && e.key.toLowerCase() === 'z') doUndo();
     });
 
     window.addEventListener('keyup', (e) => {
@@ -260,24 +258,21 @@
         return null;
     }
 
-    // 객체 선택 삭제 로직
-    function findShapeToDelete(x, y) {
-        let hitDist = 20 / zoom;
-        // 1. 이름표(중앙) 근처 클릭 확인
+    // 삭제 클릭 감지 범위 수정
+    function findIndexToDelete(x, y) {
         for (let i = shapes.length - 1; i >= 0; i--) {
             let s = shapes[i];
-            if (s.isClosed) {
-                let minX = Math.min(...s.points.map(p => p.x));
-                let maxX = Math.max(...s.points.map(p => p.x));
-                let minY = Math.min(...s.points.map(p => p.y));
-                let maxY = Math.max(...s.points.map(p => p.y));
-                let cx = (minX + maxX) / 2;
-                let cy = (minY + maxY) / 2;
-                if (Math.hypot(x - cx, y - cy) < 40 / zoom) return i;
-            }
-            // 2. 선/점 클릭 확인
+            let minX = Math.min(...s.points.map(p => p.x));
+            let maxX = Math.max(...s.points.map(p => p.x));
+            let minY = Math.min(...s.points.map(p => p.y));
+            let maxY = Math.max(...s.points.map(p => p.y));
+            let cx = (minX + maxX) / 2;
+            let cy = (minY + maxY) / 2;
+            // 이름표 근처 클릭 시 삭제
+            if (Math.hypot(x - cx, y - cy) < 50 / zoom) return i;
+            // 점 근처 클릭 시 삭제
             for (let pt of s.points) {
-                if (Math.hypot(x - pt.x, y - pt.y) < hitDist) return i;
+                if (Math.hypot(x - pt.x, y - pt.y) < 20 / zoom) return i;
             }
         }
         return -1;
@@ -292,11 +287,8 @@
         let {x, y} = getMousePos(e);
 
         if (mode === 'delete') {
-            let idx = findShapeToDelete(x, y);
-            if (idx !== -1) {
-                shapes.splice(idx, 1);
-                updateResults(); draw();
-            }
+            let idx = findIndexToDelete(x, y);
+            if (idx !== -1) { shapes.splice(idx, 1); updateResults(); draw(); }
             return;
         }
 
@@ -316,7 +308,7 @@
                 if (actual && !isNaN(actual)) {
                     scale = parseFloat(actual) / pxDist;
                     isScaleSet = true;
-                    scaleStatus.textContent = `척도 고정됨 (1px = ${scale.toFixed(2)}mm)`;
+                    scaleStatus.textContent = `척도 설정 완료`;
                     scaleStatus.className = 'set';
                 }
                 mode = 'idle'; calibPoints = []; btnCalibrate.classList.remove('active'); updateResults();
@@ -325,8 +317,7 @@
             if (currentPoints.length > 2 && x === currentPoints[0].x && y === currentPoints[0].y) {
                 let roomCount = shapes.filter(s => s.isClosed).length + 1;
                 shapes.push({ name: `Room ${roomCount}`, points: [...currentPoints], isClosed: true });
-                currentPoints = [];
-                updateResults(); draw(); return;
+                currentPoints = []; updateResults(); draw(); return;
             }
             currentPoints.push({x, y});
             updateResults();
@@ -337,7 +328,7 @@
     canvas.addEventListener('mousemove', (e) => {
         if (isDragging) { panX = e.clientX - dragStartX; panY = e.clientY - dragStartY; draw(); return; }
         let {x, y} = getMousePos(e);
-        snapPt = mode === 'draw' ? findGlobalSnap(x, y) : null;
+        snapPt = (mode === 'draw') ? findGlobalSnap(x, y) : null;
         if (snapPt) { mouseX = snapPt.x; mouseY = snapPt.y; } 
         else {
             if (isShiftDown && mode === 'draw' && currentPoints.length > 0) {
@@ -361,76 +352,63 @@
         draw();
     }, { passive: false });
 
-    // 버튼 액션 관리
-    function setMode(newMode, btn) {
-        mode = newMode;
-        [btnCalibrate, btnDraw, btnDelete].forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        canvas.style.cursor = (mode === 'draw' || mode === 'delete' || mode === 'calibrate') ? 'crosshair' : 'default';
+    function setMode(m, b) {
+        mode = m;
+        [btnCalibrate, btnDraw, btnDelete].forEach(el => el.classList.remove('active'));
+        if (b) b.classList.add('active');
+        canvas.style.cursor = (mode === 'idle') ? 'default' : 'crosshair';
     }
 
     btnCalibrate.addEventListener('click', () => setMode('calibrate', btnCalibrate));
     btnDraw.addEventListener('click', () => setMode('draw', btnDraw));
     btnDelete.addEventListener('click', () => setMode('delete', btnDelete));
     
-    btnFit.addEventListener('click', () => {
-        let allPts = [];
-        shapes.forEach(s => allPts.push(...s.points));
-        allPts.push(...currentPoints);
-        if (allPts.length === 0) { panX = canvas.width / 2; panY = canvas.height / 2; zoom = 1; draw(); return; }
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        for (let pt of allPts) {
-            minX = Math.min(minX, pt.x); minY = Math.min(minY, pt.y);
-            maxX = Math.max(maxX, pt.x); maxY = Math.max(maxY, pt.y);
-        }
-        let w = maxX - minX, h = maxY - minY;
-        let scaleX = (canvas.width - 150) / (w || 1), scaleY = (canvas.height - 150) / (h || 1);
-        zoom = Math.min(scaleX, scaleY); if (zoom > 5) zoom = 5; if (zoom < 0.1) zoom = 0.1;
-        panX = canvas.width / 2 - (minX + w / 2) * zoom; panY = canvas.height / 2 - (minY + h / 2) * zoom;
-        draw();
-    });
-
     btnFinish.addEventListener('click', () => {
         if (mode === 'draw' && currentPoints.length > 1) {
             let wallCount = shapes.filter(s => !s.isClosed).length + 1;
             shapes.push({ name: `Wall ${wallCount}`, points: [...currentPoints], isClosed: false });
-            currentPoints = [];
-            updateResults(); draw();
+            currentPoints = []; updateResults(); draw();
         }
     });
-    
-    function doUndo() {
+
+    btnUndo.addEventListener('click', () => {
         if (currentPoints.length > 0) currentPoints.pop();
         else if (shapes.length > 0) {
-            let lastShape = shapes.pop();
-            currentPoints = [...lastShape.points];
-            if (lastShape.isClosed) currentPoints.pop();
+            let last = shapes.pop();
+            currentPoints = [...last.points];
+            if (last.isClosed) currentPoints.pop();
         }
-        updateResults(); draw();
-    }
-
-    btnClear.addEventListener('click', () => {
-        if(!confirm("모든 도면 정보를 초기화하시겠습니까?")) return;
-        shapes = []; currentPoints = []; calibPoints = []; setMode('idle', null);
-        panX = canvas.width / 2; panY = canvas.height / 2; zoom = 1;
         updateResults(); draw();
     });
 
-    [wallHeightInput, baseWallType, chkGypsum95, chkGypsum125, insulationType, chkDoubleLeaf].forEach(el => { el.addEventListener('change', updateResults); });
+    btnFit.addEventListener('click', () => {
+        let pts = []; shapes.forEach(s => pts.push(...s.points)); pts.push(...currentPoints);
+        if (pts.length === 0) return;
+        let minX = Math.min(...pts.map(p => p.x)), maxX = Math.max(...pts.map(p => p.x));
+        let minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y));
+        let w = maxX - minX, h = maxY - minY;
+        zoom = Math.min((canvas.width - 150) / (w || 1), (canvas.height - 150) / (h || 1));
+        if (zoom > 5) zoom = 5; panX = canvas.width / 2 - (minX + w / 2) * zoom; panY = canvas.height / 2 - (minY + h / 2) * zoom;
+        draw();
+    });
+
+    btnClear.addEventListener('click', () => {
+        if (confirm("전체 초기화하시겠습니까?")) { shapes = []; currentPoints = []; updateResults(); draw(); }
+    });
+
+    [wallHeightInput, baseWallType, chkGypsum95, chkGypsum125, insulationType, chkDoubleLeaf].forEach(el => el.addEventListener('change', updateResults));
 
     function drawLineLabel(p1, p2, color) {
-        let dx = p2.x - p1.x; let dy = p2.y - p1.y; let distMm = Math.hypot(dx, dy) * scale;
-        let midX = (p1.x + p2.x) / 2; let midY = (p1.y + p2.y) / 2;
-        ctx.save(); ctx.translate(midX, midY);
-        let angle = Math.atan2(dy, dx); if (angle > Math.PI / 2 || angle < -Math.PI / 2) angle += Math.PI;
-        ctx.rotate(angle);
-        let text = `${Math.round(distMm)} mm`;
-        let fontSize = 12 / zoom;
-        ctx.font = `700 ${fontSize}px 'Pretendard', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        let textWidth = ctx.measureText(text).width;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.beginPath(); ctx.roundRect(-textWidth/2 - 5/zoom, -fontSize - 5/zoom, textWidth + 10/zoom, fontSize + 8/zoom, 4/zoom); ctx.fill();
-        ctx.fillStyle = color; ctx.fillText(text, 0, -3/zoom); ctx.restore();
+        let dx = p2.x - p1.x; let dy = p2.y - p1.y; let mm = Math.hypot(dx, dy) * scale;
+        let mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        ctx.save(); ctx.translate(mx, my);
+        let ang = Math.atan2(dy, dx); if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI;
+        ctx.rotate(ang);
+        ctx.font = `700 ${12/zoom}px Pretendard`; ctx.textAlign = 'center';
+        let txt = `${Math.round(mm)} mm`;
+        let tw = ctx.measureText(txt).width;
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(-tw/2-4/zoom, -15/zoom, tw+8/zoom, 16/zoom);
+        ctx.fillStyle = color; ctx.fillText(txt, 0, -2/zoom); ctx.restore();
     }
 
     function draw() {
@@ -438,100 +416,79 @@
         ctx.save(); ctx.translate(panX, panY); ctx.scale(zoom, zoom);
         if (image) ctx.drawImage(image, 0, 0);
 
-        if (calibPoints.length > 0) {
-            ctx.strokeStyle = '#dc3545'; ctx.lineWidth = 2 / zoom; ctx.beginPath(); ctx.arc(calibPoints[0].x, calibPoints[0].y, 4/zoom, 0, Math.PI*2); ctx.fillStyle = '#dc3545'; ctx.fill();
-            if (mode === 'calibrate' && calibPoints.length === 1) { ctx.moveTo(calibPoints[0].x, calibPoints[0].y); ctx.lineTo(mouseX, mouseY); ctx.stroke(); }
-        }
-
-        for (let shape of shapes) {
-            let pts = shape.points;
+        shapes.forEach(s => {
             ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#2b2d42'; 
-            ctx.lineWidth = 4 / zoom; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-            if (shape.isClosed) { ctx.lineTo(pts[0].x, pts[0].y); ctx.fillStyle = (mode === 'delete') ? 'rgba(217, 4, 41, 0.2)' : 'rgba(67, 97, 238, 0.1)'; ctx.fill(); }
+            ctx.lineWidth = 4 / zoom; ctx.beginPath(); ctx.moveTo(s.points[0].x, s.points[0].y);
+            s.points.forEach(p => ctx.lineTo(p.x, p.y));
+            if (s.isClosed) { ctx.closePath(); ctx.fillStyle = (mode === 'delete') ? 'rgba(217, 4, 41, 0.2)' : 'rgba(67, 97, 238, 0.1)'; ctx.fill(); }
             ctx.stroke();
+            for (let i = 0; i < s.points.length - 1; i++) drawLineLabel(s.points[i], s.points[i+1], '#2b2d42');
+            if (s.isClosed) drawLineLabel(s.points[s.points.length-1], s.points[0], '#2b2d42');
 
-            for (let i = 0; i < pts.length - 1; i++) drawLineLabel(pts[i], pts[i+1], '#2b2d42');
-            if (shape.isClosed) drawLineLabel(pts[pts.length-1], pts[0], '#2b2d42');
-
-            ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2b2d42'; ctx.lineWidth = 1.5 / zoom;
-            for (let pt of pts) { ctx.beginPath(); ctx.arc(pt.x, pt.y, 4 / zoom, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
-
-            if (shape.isClosed && pts.length > 2) {
-                let s1 = 0, s2 = 0; let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                for (let i = 0; i < pts.length; i++) {
-                    let j = (i + 1) % pts.length;
-                    s1 += (pts[i].x * scale) * (pts[j].y * scale); s2 += (pts[j].x * scale) * (pts[i].y * scale);
-                    minX = Math.min(minX, pts[i].x); minY = Math.min(minY, pts[i].y);
-                    maxX = Math.max(maxX, pts[i].x); maxY = Math.max(maxY, pts[i].y);
+            if (s.isClosed) {
+                let minX = Math.min(...s.points.map(p => p.x)), maxX = Math.max(...s.points.map(p => p.x));
+                let minY = Math.min(...s.points.map(p => p.y)), maxY = Math.max(...s.points.map(p => p.y));
+                let s1 = 0, s2 = 0;
+                for (let i = 0; i < s.points.length; i++) {
+                    let j = (i + 1) % s.points.length;
+                    s1 += (s.points[i].x * scale) * (s.points[j].y * scale); s2 += (s.points[j].x * scale) * (s.points[i].y * scale);
                 }
-                let areaSqM = (Math.abs(s1 - s2) / 2 / 1000000).toFixed(2); let pyeong = (areaSqM * 0.3025).toFixed(2);
-                let cx = (minX + maxX) / 2; let cy = (minY + maxY) / 2;
-                ctx.save(); ctx.translate(cx, cy);
-                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(-55/zoom, -35/zoom, 110/zoom, 70/zoom, 12/zoom);
-                ctx.shadowColor = 'rgba(0,0,0,0.1)'; ctx.shadowBlur = 10/zoom; ctx.fill();
-                ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#4361ee'; ctx.lineWidth = 2 / zoom; ctx.stroke();
-                ctx.fillStyle = ctx.strokeStyle; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.font = `bold ${12/zoom}px 'Pretendard', sans-serif`; ctx.fillText(shape.name, 0, -20/zoom);
-                ctx.fillStyle = '#2b2d42'; ctx.font = `900 ${16/zoom}px 'Pretendard', sans-serif`; ctx.fillText(`${areaSqM} ㎡`, 0, 0);
-                ctx.fillStyle = '#6c757d'; ctx.font = `600 ${12/zoom}px 'Pretendard', sans-serif`; ctx.fillText(`(${pyeong} 평)`, 0, 18/zoom);
+                let aM2 = (Math.abs(s1 - s2) / 2000000).toFixed(1);
+                ctx.save(); ctx.translate((minX+maxX)/2, (minY+maxY)/2);
+                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.roundRect(-50/zoom, -30/zoom, 100/zoom, 60/zoom, 10/zoom); ctx.fill();
+                ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#4361ee'; ctx.lineWidth = 2/zoom; ctx.stroke();
+                ctx.fillStyle = ctx.strokeStyle; ctx.textAlign = 'center';
+                ctx.font = `bold ${11/zoom}px Pretendard`; ctx.fillText(s.name, 0, -12/zoom);
+                ctx.fillStyle = '#2b2d42'; ctx.font = `900 ${15/zoom}px Pretendard`; ctx.fillText(`${aM2} ㎡`, 0, 12/zoom);
                 ctx.restore();
             }
-        }
+        });
 
         if (currentPoints.length > 0) {
-            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 3 / zoom; ctx.beginPath(); ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
-            for (let i = 1; i < currentPoints.length; i++) ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
-            if (mode === 'draw') ctx.lineTo(mouseX, mouseY);
+            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 3/zoom; ctx.beginPath(); ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+            currentPoints.forEach(p => ctx.lineTo(p.x, p.y)); if (mode === 'draw') ctx.lineTo(mouseX, mouseY);
             ctx.stroke();
         }
-
-        if (snapPt) {
-            ctx.beginPath(); ctx.arc(snapPt.x, snapPt.y, 8 / zoom, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(217, 4, 41, 0.4)'; ctx.fill();
-            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 2 / zoom; ctx.stroke();
-        }
+        if (snapPt) { ctx.beginPath(); ctx.arc(snapPt.x, snapPt.y, 8/zoom, 0, 7); ctx.fillStyle = 'rgba(217, 4, 41, 0.5)'; ctx.fill(); }
         ctx.restore();
     }
 
     function updateResults() {
-        if (shapes.length === 0 && currentPoints.length < 2) {
-            resultsArea.innerHTML = `<div class="results-header">Dwave 자재산출</div><div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">도면을 설계하면 실시간으로<br>산출 내역이 표시됩니다.</div>`;
-            return;
-        }
-        let totalLenMm = 0; let totalAreaSqM = 0; let totalNodes = 0;
         let html = `<div class="results-header">Dwave 자재산출</div>`;
-        for (let shape of shapes) {
-            let pts = shape.points; let shapeLen = 0; totalNodes += pts.length;
-            for (let i = 0; i < pts.length - 1; i++) shapeLen += Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y) * scale;
-            let shapeArea = 0;
-            if (shape.isClosed) {
-                shapeLen += Math.hypot(pts[0].x - pts[pts.length-1].x, pts[0].y - pts[pts.length-1].y) * scale;
-                let s1 = 0, s2 = 0;
-                for (let i = 0; i < pts.length; i++) {
-                    let j = (i + 1) % pts.length;
-                    s1 += (pts[i].x * scale) * (pts[j].y * scale); s2 += (pts[j].x * scale) * (pts[i].y * scale);
-                }
-                shapeArea = (Math.abs(s1 - s2) / 2) / 1000000;
-                totalAreaSqM += shapeArea;
-            }
-            totalLenMm += shapeLen;
-            html += `<div class="room-card"><div class="room-header">🏷️ ${shape.name}</div><div class="room-data"><span>벽체 길이:</span> <b>${(shapeLen / 1000).toFixed(2)} m</b></div>${shapeArea > 0 ? `<div class="room-data"><span>바닥 면적:</span> <b>${shapeArea.toFixed(2)} ㎡ (${(shapeArea * 0.3025).toFixed(2)}평)</b></div>` : ''}</div>`;
-        }
-        let leafMultiplier = chkDoubleLeaf.checked ? 2 : 1;
+        let totalPerimMm = 0; let totalAreaSqM = 0;
         let hMm = parseFloat(wallHeightInput.value) || 2400;
-        let wallAreaM2 = (totalLenMm / 1000) * (hMm / 1000) * leafMultiplier; 
-        let baseType = baseWallType.value;
-        let materials = [];
-        if (baseType === 'alc75') materials.push({ name: 'ALC 75T', value: Math.ceil(wallAreaM2 / 0.18), unit: '장' });
-        else if (baseType === 'alc100') materials.push({ name: 'ALC 100T', value: Math.ceil(wallAreaM2 / 0.18), unit: '장' });
-        else if (baseType === 'stud') materials.push({ name: '투바이포 (3.6m)', value: Math.ceil(((totalLenMm*2)+((Math.ceil(totalLenMm/450)+totalNodes)*hMm))*leafMultiplier/3600), unit: '개' });
-        if (chkGypsum95.checked) materials.push({ name: '일반석고 9.5T', value: Math.ceil(wallAreaM2 / 1.62), unit: '장' });
-        if (chkGypsum125.checked) materials.push({ name: '차음석고 12.5T', value: Math.ceil(wallAreaM2 / 1.62), unit: '장' });
-        if (insulationType.value !== 'none') materials.push({ name: insulationType.options[insulationType.selectedIndex].text.split(' ')[0], value: Math.ceil(wallAreaM2 / 0.45), unit: '매' });
-        html += `<div class="material-card"><div class="material-title">총 소요량 합계 ${leafMultiplier === 2 ? 'x2' : ''}</div><div style="font-size:11px; color:var(--text-muted); margin-bottom:12px; text-align:center;">Total Perimeter: ${(totalLenMm/1000).toFixed(2)}m / Area: ${totalAreaSqM.toFixed(2)}㎡</div><div class="material-grid">`;
-        materials.forEach(m => { html += `<div class="material-item"><div class="material-item-title">${m.name}</div><div class="material-item-value">${m.value}<span>${m.unit}</span></div></div>`; });
+
+        shapes.forEach(s => {
+            let perim = 0;
+            for (let i = 0; i < s.points.length - 1; i++) perim += Math.hypot(s.points[i+1].x - s.points[i].x, s.points[i+1].y - s.points[i].y) * scale;
+            let area = 0;
+            if (s.isClosed) {
+                perim += Math.hypot(s.points[s.points.length-1].x - s.points[0].x, s.points[s.points.length-1].y - s.points[0].y) * scale;
+                let s1 = 0, s2 = 0;
+                for (let i = 0; i < s.points.length; i++) {
+                    let j = (i + 1) % s.points.length;
+                    s1 += (s.points[i].x * scale) * (s.points[j].y * scale); s2 += (s.points[j].x * scale) * (s.points[i].y * scale);
+                }
+                area = Math.abs(s1 - s2) / 2000000;
+                totalAreaSqM += area;
+            }
+            totalPerimMm += perim;
+            let wallAreaM2 = (perim / 1000) * (hMm / 1000);
+            html += `<div class="room-card"><div class="room-header">${s.name}</div><div class="room-data"><span>바닥 면적:</span> <b>${area.toFixed(1)} ㎡</b></div><div class="room-data"><span>벽 면적:</span> <b class="wall-highlight">${wallAreaM2.toFixed(1)} ㎡</b></div></div>`;
+        });
+
+        let multiplier = chkDoubleLeaf.checked ? 2 : 1;
+        let totalWallM2 = (totalPerimMm / 1000) * (hMm / 1000) * multiplier;
+        let mats = [];
+        if (baseWallType.value === 'alc75') mats.push({n:'ALC 75T', v:Math.ceil(totalWallM2/0.18), u:'장'});
+        if (baseWallType.value === 'alc100') mats.push({n:'ALC 100T', v:Math.ceil(totalWallM2/0.18), u:'장'});
+        if (baseWallType.value === 'stud') mats.push({n:'투바이포(3.6m)', v:Math.ceil(totalWallM2*2.5/3.6), u:'개'});
+        if (chkGypsum95.checked) mats.push({n:'일반석고 9.5T', v:Math.ceil(totalWallM2/1.62), u:'장'});
+        if (chkGypsum125.checked) mats.push({n:'차음석고 12.5T', v:Math.ceil(totalWallM2/1.62), u:'장'});
+        if (insulationType.value !== 'none') mats.push({n:insulationType.value==='glasswool'?'글라스울':'락울', v:Math.ceil(totalWallM2/0.45), u:'매'});
+
+        html += `<div class="material-card"><div class="material-title">총 물량 합계 ${multiplier==2?'(x2)':''}</div><div class="material-grid">`;
+        mats.forEach(m => html += `<div class="material-item"><div class="material-item-title">${m.n}</div><div class="material-item-value">${m.v}<span>${m.u}</span></div></div>`);
         html += `</div></div>`;
         resultsArea.innerHTML = html;
     }
