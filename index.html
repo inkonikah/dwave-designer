@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dwave Home</title>
+    <title>Dwave Home - Material Takeoff</title>
     <style>
         :root {
             --primary: #4361ee;
@@ -18,73 +18,69 @@
             --text-muted: #6c757d;
         }
 
-        body { margin: 0; padding: 0; display: flex; height: 100vh; font-family: 'Pretendard', 'Malgun Gothic', sans-serif; overflow: hidden; background-color: #e0e4e8; color: var(--text-main); }
+        body { margin: 0; padding: 0; display: flex; height: 100vh; font-family: 'Pretendard', sans-serif; overflow: hidden; background-color: #e0e4e8; color: var(--text-main); }
         
+        /* Sidebar Layout */
         #sidebar { width: 400px; background: var(--card-bg); display: flex; flex-direction: column; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid var(--border); background: var(--dark); color: white; }
-        .sidebar-header h2 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; color: #fff; }
-        .sidebar-header p { margin: 4px 0 0 0; font-size: 12px; opacity: 0.7; font-weight: 300; }
+        .sidebar-header h2 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; }
+        .sidebar-header p { margin: 4px 0 0 0; font-size: 11px; opacity: 0.7; font-weight: 300; }
         
         .sidebar-content { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .sidebar-content::-webkit-scrollbar { width: 6px; }
         .sidebar-content::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
 
         .section-box { background: var(--light-bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border); }
-        .section-title { margin: 0 0 15px 0; font-size: 14px; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 5px; }
+        .section-title { margin: 0 0 15px 0; font-size: 14px; font-weight: 800; color: var(--dark); }
         
         .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
         .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        .form-group input[type="number"], .form-group select, .form-group input[type="file"] { 
-            padding: 10px 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 13px; outline: none; transition: all 0.2s;
-        }
+        .form-group input, .form-group select { padding: 10px 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 13px; outline: none; transition: 0.2s; }
+        .form-group input:focus { border-color: var(--primary); }
         
         .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; }
-        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
         
         .highlight-box { background-color: #fff0f3; border: 1px solid #ffccd5; padding: 12px; border-radius: 8px; margin-top: 5px; }
 
+        /* Buttons */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
         button:active { transform: scale(0.96); }
         .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
         .btn-primary.active { background-color: var(--danger); box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.2); }
         .btn-success { background-color: var(--success); color: white; }
         .btn-outline { background-color: white; border: 1px solid #ced4da; color: var(--text-main); }
-        .btn-outline:hover { background-color: #f1f3f5; }
         .btn-full { width: 100%; margin-top: 5px; }
 
-        .results-container { margin-top: 10px; }
+        /* Results Display */
         .results-header { font-size: 18px; font-weight: 900; color: var(--dark); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--dark); }
-
-        .room-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.03); position: relative; }
-        .room-header { font-weight: 800; font-size: 15px; color: var(--primary); margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 5px; }
-        .room-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-main); }
-        .room-data b { color: var(--dark); }
-        .wall-highlight { color: var(--success) !important; font-weight: 800; }
+        .room-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.03); }
+        .room-header { font-weight: 800; font-size: 15px; color: var(--primary); margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 5px; display: flex; justify-content: space-between; }
+        .color-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .room-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+        .wall-area-val { color: var(--success); font-weight: 800; }
         
         .material-card { background: #eef2fa; border: 1px solid #d7e3fc; border-radius: 12px; padding: 18px; margin-top: 20px; }
         .material-title { font-size: 16px; font-weight: 900; color: var(--primary-hover); margin-bottom: 12px; text-align: center; }
         .material-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .material-item { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center; }
-        .material-item-title { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .material-item { background: white; padding: 12px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .material-item-title { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
         .material-item-value { font-size: 18px; font-weight: 900; color: var(--dark); }
-        .material-item-value span { font-size: 12px; font-weight: 500; margin-left: 2px; }
 
-        #scaleStatus { display: inline-block; padding: 5px 10px; border-radius: 6px; background: #ffe3e3; color: var(--danger); font-size: 11px; font-weight: 800; margin-top: 8px; }
-        #scaleStatus.set { background: #d8f3dc; color: var(--success); }
-
-        .shortcut-box { background: var(--dark); color: rgba(255,255,255,0.6); font-size: 11px; padding: 15px 20px; line-height: 1.6; }
-
-        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background-color: #f1f3f5; cursor: crosshair; }
+        /* Canvas Area */
+        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background-color: #f1f3f5; }
         canvas { display: block; }
-        /* 격자 그리드 배경 */
         canvas.grid-bg { 
             background-image: 
                 linear-gradient(rgba(206, 212, 218, 0.5) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(206, 212, 218, 0.5) 1px, transparent 1px);
             background-size: 40px 40px; 
         }
+
+        /* Custom Cursors */
+        .cursor-erase { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='red' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z'></path><line x1='6' y1='11' x2='15' y2='20'></line></svg>") 8 20, auto !important; }
+        .cursor-draw { cursor: crosshair !important; }
     </style>
 </head>
 <body>
@@ -99,399 +95,211 @@
         <div class="section-box">
             <div class="section-title">📍 1. 척도 설정</div>
             <div class="form-group"><input type="file" id="imageLoader" accept="image/*"></div>
-            <button id="btnCalibrate" class="btn-primary btn-full">척도 설정 시작</button>
-            <div style="text-align: center;"><span id="scaleStatus">척도 미설정 (임시: 1px = 10mm)</span></div>
+            <button id="btnCalibrate" class="btn-primary btn-full" style="width:100%">척도 설정 시작</button>
+            <div id="scaleStatus" style="text-align:center; font-size:11px; margin-top:8px; font-weight:800; color:var(--danger)">척도 미설정</div>
         </div>
 
         <div class="section-box">
             <div class="section-title">🏗️ 2. 도면 설계</div>
             <div class="btn-grid">
                 <button id="btnDraw" class="btn-primary">✏️ 선 그리기</button>
-                <button id="btnDelete" class="btn-outline" style="color: var(--danger); border-color: var(--danger);">❌ 개별 삭제</button>
-                <button id="btnFinish" class="btn-success">✔️ 현재 선 완료</button>
+                <button id="btnDelete" class="btn-outline" style="color:var(--danger)">❌ 개별 삭제</button>
+                <button id="btnFinish" class="btn-success">✔️ 완료</button>
                 <button id="btnUndo" class="btn-outline">↩️ 되돌리기</button>
             </div>
-            <div class="btn-grid" style="margin-top: 8px;">
-                <button id="btnFit" class="btn-outline">🔍 도면 맞춤</button>
-                <button id="btnClear" class="btn-outline" style="color: var(--text-muted);">🗑️ 전체 초기화</button>
-            </div>
+            <button id="btnClear" class="btn-outline btn-full" style="margin-top:8px">🗑️ 전체 초기화</button>
         </div>
 
         <div class="section-box">
-            <div class="section-title">📦 3. 자재 사양</div>
+            <div class="section-title">📦 3. 공간별 자재 (그릴 때 적용)</div>
             <div class="form-group">
                 <label>벽 높이 (mm)</label>
-                <input type="number" id="wallHeight" value="2400" step="100">
+                <input type="number" id="wallHeight" value="2400">
             </div>
             <div class="form-group">
                 <label>기본 골조</label>
                 <select id="baseWallType">
                     <option value="none">없음</option>
-                    <option value="alc75">ALC 블록 75T</option>
-                    <option value="alc100">ALC 블록 100T</option>
-                    <option value="stud">목상 (투바이포 2x4)</option>
+                    <option value="alc75">ALC 블록 (검정)</option>
+                    <option value="stud">목상 2x4 (나무색)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>마감재 선택</label>
-                <div class="checkbox-group"><input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반 석고 9.5T (3x6)</label></div>
-                <div class="checkbox-group"><input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음 석고 12.5T (3x6)</label></div>
-                <select id="insulationType">
-                    <option value="none">충진재 없음</option>
-                    <option value="glasswool">글라스울 (450x1000)</option>
-                    <option value="rockwool">락울 (450x1000)</option>
-                </select>
+                <label>마감재</label>
+                <div class="checkbox-group"><input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반석고 (청록)</label></div>
+                <div class="checkbox-group"><input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음석고 (파랑)</label></div>
             </div>
-            
             <div class="highlight-box">
-                <div class="checkbox-group" style="margin:0;">
+                <div class="checkbox-group" style="margin:0">
                     <input type="checkbox" id="chkDoubleLeaf"> 
-                    <label for="chkDoubleLeaf" style="color:var(--danger); font-weight:800; font-size:13px;">🔥 더블리프(이중벽) 수량 x2</label>
+                    <label for="chkDoubleLeaf" style="color:var(--danger); font-weight:800">🔥 더블리프(이중벽 시각화)</label>
                 </div>
             </div>
         </div>
 
-        <div id="resultsArea" class="results-container">
-            <div class="results-header">Dwave 자재산출</div>
-            </div>
-    </div>
-    
-    <div class="shortcut-box">
-        • <b>H</b> + 드래그: 화면 이동 / <b>휠</b>: 확대 축소<br>
-        • <b>Shift</b>: 직교 모드 / <b>삭제 모드</b>: 이름표 클릭 시 삭제
+        <div id="resultsArea"><div class="results-header">Dwave 자재산출</div></div>
     </div>
 </div>
 
-<div id="canvas-container">
-    <canvas id="canvas" class="grid-bg"></canvas>
-</div>
+<div id="canvas-container"><canvas id="canvas" class="grid-bg"></canvas></div>
 
 <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const container = document.getElementById('canvas-container');
-
-    const imageLoader = document.getElementById('imageLoader');
-    const btnCalibrate = document.getElementById('btnCalibrate');
-    const btnDraw = document.getElementById('btnDraw');
-    const btnDelete = document.getElementById('btnDelete');
-    const btnFinish = document.getElementById('btnFinish');
-    const btnUndo = document.getElementById('btnUndo');
-    const btnFit = document.getElementById('btnFit');
-    const btnClear = document.getElementById('btnClear');
-    const scaleStatus = document.getElementById('scaleStatus');
     const resultsArea = document.getElementById('resultsArea');
 
-    const wallHeightInput = document.getElementById('wallHeight');
-    const baseWallType = document.getElementById('baseWallType');
-    const chkGypsum95 = document.getElementById('chkGypsum95');
-    const chkGypsum125 = document.getElementById('chkGypsum125');
-    const insulationType = document.getElementById('insulationType');
-    const chkDoubleLeaf = document.getElementById('chkDoubleLeaf');
-
-    let image = null;
     let mode = 'idle'; 
     let shapes = []; 
     let currentPoints = [];
     let calibPoints = [];
     let scale = 10; 
     let isScaleSet = false;
-
-    let panX = 0, panY = 0;
-    let zoom = 1;
-    let isHDown = false, isDragging = false, isShiftDown = false;
-    let dragStartX = 0, dragStartY = 0;
-    let mouseX = 0, mouseY = 0;
-    let snapPt = null;
+    let panX = 0, panY = 0, zoom = 1;
+    let isHDown = false, isDragging = false, dragStartX = 0, dragStartY = 0, mouseX = 0, mouseY = 0;
 
     function resizeCanvas() {
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
-        if(!image && shapes.length === 0 && currentPoints.length === 0 && panX === 0 && panY === 0) {
-            panX = canvas.width / 2; panY = canvas.height / 2;
-        }
+        if(panX === 0) { panX = canvas.width / 2; panY = canvas.height / 2; }
         draw();
     }
     window.addEventListener('resize', resizeCanvas);
 
-    imageLoader.addEventListener('change', (e) => {
-        if (!e.target.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            image = new Image();
-            image.onload = () => {
-                canvas.classList.remove('grid-bg');
-                zoom = Math.min(canvas.width / image.width, canvas.height / image.height) * 0.9;
-                panX = (canvas.width - image.width * zoom) / 2; panY = (canvas.height - image.height * zoom) / 2;
-                draw();
-            }
-            image.src = event.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.key.toLowerCase() === 'h') { isHDown = true; canvas.style.cursor = 'grab'; }
-        if (e.key === 'Shift') isShiftDown = true;
-    });
-
-    window.addEventListener('keyup', (e) => {
-        if (e.key.toLowerCase() === 'h') { isHDown = false; isDragging = false; canvas.style.cursor = (mode === 'draw' || mode === 'delete') ? 'crosshair' : 'default'; }
-        if (e.key === 'Shift') isShiftDown = false;
-    });
-
-    function getMousePos(e) {
-        const rect = canvas.getBoundingClientRect();
-        return { x: (e.clientX - rect.left - panX) / zoom, y: (e.clientY - rect.top - panY) / zoom };
+    function setMode(m, btn) {
+        mode = m;
+        document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        canvas.classList.remove('cursor-draw', 'cursor-erase');
+        if(mode === 'draw') canvas.classList.add('cursor-draw');
+        if(mode === 'delete') canvas.classList.add('cursor-erase');
     }
 
-    function findGlobalSnap(x, y) {
-        let snapDist = 15 / zoom; 
-        for (let shape of shapes) {
-            for (let pt of shape.points) {
-                if (Math.hypot(x - pt.x, y - pt.y) < snapDist) return {x: pt.x, y: pt.y};
-            }
-        }
-        if (currentPoints.length > 2 && Math.hypot(x - currentPoints[0].x, y - currentPoints[0].y) < snapDist) {
-            return {x: currentPoints[0].x, y: currentPoints[0].y}; 
-        }
-        return null;
-    }
-
-    // 삭제 클릭 감지 범위 수정
-    function findIndexToDelete(x, y) {
-        for (let i = shapes.length - 1; i >= 0; i--) {
-            let s = shapes[i];
-            let minX = Math.min(...s.points.map(p => p.x));
-            let maxX = Math.max(...s.points.map(p => p.x));
-            let minY = Math.min(...s.points.map(p => p.y));
-            let maxY = Math.max(...s.points.map(p => p.y));
-            let cx = (minX + maxX) / 2;
-            let cy = (minY + maxY) / 2;
-            // 이름표 근처 클릭 시 삭제
-            if (Math.hypot(x - cx, y - cy) < 50 / zoom) return i;
-            // 점 근처 클릭 시 삭제
-            for (let pt of s.points) {
-                if (Math.hypot(x - pt.x, y - pt.y) < 20 / zoom) return i;
-            }
-        }
-        return -1;
-    }
+    document.getElementById('btnCalibrate').onclick = (e) => setMode('calibrate', e.target);
+    document.getElementById('btnDraw').onclick = (e) => setMode('draw', e.target);
+    document.getElementById('btnDelete').onclick = (e) => setMode('delete', e.target);
 
     canvas.addEventListener('mousedown', (e) => {
-        if (isHDown || e.button === 1) {
-            isDragging = true; dragStartX = e.clientX - panX; dragStartY = e.clientY - panY;
-            canvas.style.cursor = 'grabbing'; return;
-        }
-
-        let {x, y} = getMousePos(e);
+        if (isHDown || e.button === 1) { isDragging = true; dragStartX = e.clientX - panX; dragStartY = e.clientY - panY; return; }
+        const rect = canvas.getBoundingClientRect();
+        let x = (e.clientX - rect.left - panX) / zoom, y = (e.clientY - rect.top - panY) / zoom;
 
         if (mode === 'delete') {
-            let idx = findIndexToDelete(x, y);
-            if (idx !== -1) { shapes.splice(idx, 1); updateResults(); draw(); }
-            return;
-        }
-
-        if (mode === 'idle') return;
-
-        if (snapPt) { x = snapPt.x; y = snapPt.y; } 
-        else if (isShiftDown && mode === 'draw' && currentPoints.length > 0) {
-            const last = currentPoints[currentPoints.length - 1];
-            if (Math.abs(x - last.x) > Math.abs(y - last.y)) y = last.y; else x = last.x;
+            for (let i = shapes.length - 1; i >= 0; i--) {
+                let s = shapes[i], minX = Math.min(...s.points.map(p => p.x)), maxX = Math.max(...s.points.map(p => p.x)), minY = Math.min(...s.points.map(p => p.y)), maxY = Math.max(...s.points.map(p => p.y));
+                if (Math.hypot(x - (minX+maxX)/2, y - (minY+maxY)/2) < 50/zoom) { shapes.splice(i, 1); break; }
+            }
+            updateResults(); draw(); return;
         }
 
         if (mode === 'calibrate') {
             calibPoints.push({x, y});
             if (calibPoints.length === 2) {
-                let pxDist = Math.hypot(calibPoints[1].x - calibPoints[0].x, calibPoints[1].y - calibPoints[0].y);
-                let actual = prompt("기준선의 실제 길이는 몇 mm 입니까?");
-                if (actual && !isNaN(actual)) {
-                    scale = parseFloat(actual) / pxDist;
-                    isScaleSet = true;
-                    scaleStatus.textContent = `척도 설정 완료`;
-                    scaleStatus.className = 'set';
-                }
-                mode = 'idle'; calibPoints = []; btnCalibrate.classList.remove('active'); updateResults();
+                let dist = Math.hypot(calibPoints[1].x - calibPoints[0].x, calibPoints[1].y - calibPoints[0].y);
+                let actual = prompt("기준선의 실제 길이(mm):");
+                if(actual) { scale = actual / dist; isScaleSet = true; document.getElementById('scaleStatus').innerText = "척도 설정 완료"; document.getElementById('scaleStatus').style.color = "green"; }
+                setMode('idle'); calibPoints = [];
             }
         } else if (mode === 'draw') {
-            if (currentPoints.length > 2 && x === currentPoints[0].x && y === currentPoints[0].y) {
-                let roomCount = shapes.filter(s => s.isClosed).length + 1;
-                shapes.push({ name: `Room ${roomCount}`, points: [...currentPoints], isClosed: true });
+            if (currentPoints.length > 2 && Math.hypot(x - currentPoints[0].x, y - currentPoints[0].y) < 15/zoom) {
+                let base = document.getElementById('baseWallType').value;
+                let g125 = document.getElementById('chkGypsum125').checked, g95 = document.getElementById('chkGypsum95').checked;
+                let color = '#2b2d42'; let lw = 4;
+                if(g125) { color = '#0000ff'; lw = 7; }
+                else if(g95) { color = '#008080'; lw = 5; }
+                else if(base === 'stud') color = '#8b4513';
+                else if(base.includes('alc')) color = '#000000';
+
+                shapes.push({ 
+                    name: `Room ${shapes.filter(s=>s.isClosed).length + 1}`, points: [...currentPoints], isClosed: true, color, lw,
+                    spec: { height: parseFloat(document.getElementById('wallHeight').value), doubleLeaf: document.getElementById('chkDoubleLeaf').checked, base, g95, g125 }
+                });
                 currentPoints = []; updateResults(); draw(); return;
             }
             currentPoints.push({x, y});
-            updateResults();
         }
         draw();
     });
 
     canvas.addEventListener('mousemove', (e) => {
         if (isDragging) { panX = e.clientX - dragStartX; panY = e.clientY - dragStartY; draw(); return; }
-        let {x, y} = getMousePos(e);
-        snapPt = (mode === 'draw') ? findGlobalSnap(x, y) : null;
-        if (snapPt) { mouseX = snapPt.x; mouseY = snapPt.y; } 
-        else {
-            if (isShiftDown && mode === 'draw' && currentPoints.length > 0) {
-                const last = currentPoints[currentPoints.length - 1];
-                if (Math.abs(x - last.x) > Math.abs(y - last.y)) y = last.y; else x = last.x;
-            }
-            mouseX = x; mouseY = y;
-        }
+        const rect = canvas.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left - panX) / zoom; mouseY = (e.clientY - rect.top - panY) / zoom;
         draw();
     });
 
-    canvas.addEventListener('mouseup', () => { isDragging = false; if(isHDown) canvas.style.cursor = 'grab'; });
-    
+    canvas.addEventListener('mouseup', () => isDragging = false);
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
         let newZoom = zoom * Math.exp((e.deltaY < 0 ? 1 : -1) * 0.15);
-        if (newZoom < 0.1) newZoom = 0.1; if (newZoom > 20) newZoom = 20;
+        if (newZoom < 0.1) newZoom = 0.1; if (newZoom > 15) newZoom = 15;
         panX = mx - (mx - panX) * (newZoom / zoom); panY = my - (my - panY) * (newZoom / zoom); zoom = newZoom;
         draw();
     }, { passive: false });
 
-    function setMode(m, b) {
-        mode = m;
-        [btnCalibrate, btnDraw, btnDelete].forEach(el => el.classList.remove('active'));
-        if (b) b.classList.add('active');
-        canvas.style.cursor = (mode === 'idle') ? 'default' : 'crosshair';
-    }
-
-    btnCalibrate.addEventListener('click', () => setMode('calibrate', btnCalibrate));
-    btnDraw.addEventListener('click', () => setMode('draw', btnDraw));
-    btnDelete.addEventListener('click', () => setMode('delete', btnDelete));
-    
-    btnFinish.addEventListener('click', () => {
-        if (mode === 'draw' && currentPoints.length > 1) {
-            let wallCount = shapes.filter(s => !s.isClosed).length + 1;
-            shapes.push({ name: `Wall ${wallCount}`, points: [...currentPoints], isClosed: false });
-            currentPoints = []; updateResults(); draw();
-        }
-    });
-
-    btnUndo.addEventListener('click', () => {
-        if (currentPoints.length > 0) currentPoints.pop();
-        else if (shapes.length > 0) {
-            let last = shapes.pop();
-            currentPoints = [...last.points];
-            if (last.isClosed) currentPoints.pop();
-        }
-        updateResults(); draw();
-    });
-
-    btnFit.addEventListener('click', () => {
-        let pts = []; shapes.forEach(s => pts.push(...s.points)); pts.push(...currentPoints);
-        if (pts.length === 0) return;
-        let minX = Math.min(...pts.map(p => p.x)), maxX = Math.max(...pts.map(p => p.x));
-        let minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y));
-        let w = maxX - minX, h = maxY - minY;
-        zoom = Math.min((canvas.width - 150) / (w || 1), (canvas.height - 150) / (h || 1));
-        if (zoom > 5) zoom = 5; panX = canvas.width / 2 - (minX + w / 2) * zoom; panY = canvas.height / 2 - (minY + h / 2) * zoom;
-        draw();
-    });
-
-    btnClear.addEventListener('click', () => {
-        if (confirm("전체 초기화하시겠습니까?")) { shapes = []; currentPoints = []; updateResults(); draw(); }
-    });
-
-    [wallHeightInput, baseWallType, chkGypsum95, chkGypsum125, insulationType, chkDoubleLeaf].forEach(el => el.addEventListener('change', updateResults));
-
-    function drawLineLabel(p1, p2, color) {
-        let dx = p2.x - p1.x; let dy = p2.y - p1.y; let mm = Math.hypot(dx, dy) * scale;
-        let mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-        ctx.save(); ctx.translate(mx, my);
-        let ang = Math.atan2(dy, dx); if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI;
-        ctx.rotate(ang);
-        ctx.font = `700 ${12/zoom}px Pretendard`; ctx.textAlign = 'center';
-        let txt = `${Math.round(mm)} mm`;
-        let tw = ctx.measureText(txt).width;
-        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(-tw/2-4/zoom, -15/zoom, tw+8/zoom, 16/zoom);
-        ctx.fillStyle = color; ctx.fillText(txt, 0, -2/zoom); ctx.restore();
-    }
-
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(panX, panY); ctx.scale(zoom, zoom);
-        if (image) ctx.drawImage(image, 0, 0);
 
         shapes.forEach(s => {
-            ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#2b2d42'; 
-            ctx.lineWidth = 4 / zoom; ctx.beginPath(); ctx.moveTo(s.points[0].x, s.points[0].y);
-            s.points.forEach(p => ctx.lineTo(p.x, p.y));
-            if (s.isClosed) { ctx.closePath(); ctx.fillStyle = (mode === 'delete') ? 'rgba(217, 4, 41, 0.2)' : 'rgba(67, 97, 238, 0.1)'; ctx.fill(); }
-            ctx.stroke();
-            for (let i = 0; i < s.points.length - 1; i++) drawLineLabel(s.points[i], s.points[i+1], '#2b2d42');
-            if (s.isClosed) drawLineLabel(s.points[s.points.length-1], s.points[0], '#2b2d42');
-
-            if (s.isClosed) {
-                let minX = Math.min(...s.points.map(p => p.x)), maxX = Math.max(...s.points.map(p => p.x));
-                let minY = Math.min(...s.points.map(p => p.y)), maxY = Math.max(...s.points.map(p => p.y));
-                let s1 = 0, s2 = 0;
-                for (let i = 0; i < s.points.length; i++) {
-                    let j = (i + 1) % s.points.length;
-                    s1 += (s.points[i].x * scale) * (s.points[j].y * scale); s2 += (s.points[j].x * scale) * (s.points[i].y * scale);
-                }
-                let aM2 = (Math.abs(s1 - s2) / 2000000).toFixed(1);
-                ctx.save(); ctx.translate((minX+maxX)/2, (minY+maxY)/2);
-                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.roundRect(-50/zoom, -30/zoom, 100/zoom, 60/zoom, 10/zoom); ctx.fill();
-                ctx.strokeStyle = (mode === 'delete') ? '#d90429' : '#4361ee'; ctx.lineWidth = 2/zoom; ctx.stroke();
-                ctx.fillStyle = ctx.strokeStyle; ctx.textAlign = 'center';
-                ctx.font = `bold ${11/zoom}px Pretendard`; ctx.fillText(s.name, 0, -12/zoom);
-                ctx.fillStyle = '#2b2d42'; ctx.font = `900 ${15/zoom}px Pretendard`; ctx.fillText(`${aM2} ㎡`, 0, 12/zoom);
-                ctx.restore();
+            ctx.strokeStyle = (mode === 'delete') ? 'red' : s.color;
+            ctx.lineWidth = s.lw/zoom; ctx.lineJoin='round'; ctx.beginPath(); ctx.moveTo(s.points[0].x, s.points[0].y);
+            s.points.forEach(p => ctx.lineTo(p.x, p.y)); ctx.closePath(); ctx.stroke();
+            
+            if(s.spec.doubleLeaf) {
+                ctx.strokeStyle = s.color; ctx.lineWidth = 1.5/zoom; ctx.setLineDash([5/zoom, 5/zoom]);
+                ctx.beginPath(); ctx.moveTo(s.points[0].x + 10/zoom, s.points[0].y + 10/zoom);
+                s.points.forEach(p => ctx.lineTo(p.x + 10/zoom, p.y + 10/zoom)); ctx.closePath(); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            if(s.isClosed) {
+                let minX = Math.min(...s.points.map(p => p.x)), maxX = Math.max(...s.points.map(p => p.x)), minY = Math.min(...s.points.map(p => p.y)), maxY = Math.max(...s.points.map(p => p.y));
+                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.roundRect((minX+maxX)/2 - 45/zoom, (minY+maxY)/2 - 25/zoom, 90/zoom, 50/zoom, 8/zoom); ctx.fill();
+                ctx.strokeStyle = s.color; ctx.lineWidth = 2/zoom; ctx.stroke();
+                ctx.fillStyle = s.color; ctx.font = `bold ${13/zoom}px Pretendard`; ctx.textAlign='center'; 
+                ctx.fillText(s.name, (minX+maxX)/2, (minY+maxY)/2 + 5/zoom);
             }
         });
 
         if (currentPoints.length > 0) {
-            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 3/zoom; ctx.beginPath(); ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+            ctx.strokeStyle = 'red'; ctx.lineWidth = 3/zoom; ctx.beginPath(); ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
             currentPoints.forEach(p => ctx.lineTo(p.x, p.y)); if (mode === 'draw') ctx.lineTo(mouseX, mouseY);
             ctx.stroke();
         }
-        if (snapPt) { ctx.beginPath(); ctx.arc(snapPt.x, snapPt.y, 8/zoom, 0, 7); ctx.fillStyle = 'rgba(217, 4, 41, 0.5)'; ctx.fill(); }
         ctx.restore();
     }
 
     function updateResults() {
         let html = `<div class="results-header">Dwave 자재산출</div>`;
-        let totalPerimMm = 0; let totalAreaSqM = 0;
-        let hMm = parseFloat(wallHeightInput.value) || 2400;
-
+        let totalMats = {};
         shapes.forEach(s => {
-            let perim = 0;
-            for (let i = 0; i < s.points.length - 1; i++) perim += Math.hypot(s.points[i+1].x - s.points[i].x, s.points[i+1].y - s.points[i].y) * scale;
-            let area = 0;
-            if (s.isClosed) {
-                perim += Math.hypot(s.points[s.points.length-1].x - s.points[0].x, s.points[s.points.length-1].y - s.points[0].y) * scale;
-                let s1 = 0, s2 = 0;
-                for (let i = 0; i < s.points.length; i++) {
-                    let j = (i + 1) % s.points.length;
-                    s1 += (s.points[i].x * scale) * (s.points[j].y * scale); s2 += (s.points[j].x * scale) * (s.points[i].y * scale);
-                }
-                area = Math.abs(s1 - s2) / 2000000;
-                totalAreaSqM += area;
-            }
-            totalPerimMm += perim;
-            let wallAreaM2 = (perim / 1000) * (hMm / 1000);
-            html += `<div class="room-card"><div class="room-header">${s.name}</div><div class="room-data"><span>바닥 면적:</span> <b>${area.toFixed(1)} ㎡</b></div><div class="room-data"><span>벽 면적:</span> <b class="wall-highlight">${wallAreaM2.toFixed(1)} ㎡</b></div></div>`;
+            let p = 0; for(let i=0; i<s.points.length-1; i++) p += Math.hypot(s.points[i+1].x-s.points[i].x, s.points[i+1].y-s.points[i].y)*scale;
+            if(s.isClosed) p += Math.hypot(s.points[s.points.length-1].x-s.points[0].x, s.points[s.points.length-1].y-s.points[0].y)*scale;
+            
+            let wallArea = (p/1000) * (s.spec.height/1000) * (s.spec.doubleLeaf ? 2 : 1);
+            html += `<div class="room-card"><div class="room-header">${s.name} <span class="color-indicator" style="background:${s.color}"></span></div><div class="room-data"><span>벽 면적:</span> <b class="wall-area-val">${wallArea.toFixed(1)} ㎡</b></div></div>`;
+
+            const add = (n, v, u) => { totalMats[n] = totalMats[n] || {v:0, u}; totalMats[n].v += v; };
+            if(s.spec.base === 'alc75') add('ALC 75T', Math.ceil(wallArea/0.18), '장');
+            if(s.spec.base === 'stud') add('목상(투바이)', Math.ceil(wallArea*2.5/3.6), '개');
+            if(s.spec.g95) add('일반석고 9.5T', Math.ceil(wallArea/1.62), '장');
+            if(s.spec.g125) add('차음석고 12.5T', Math.ceil(wallArea/1.62), '장');
         });
 
-        let multiplier = chkDoubleLeaf.checked ? 2 : 1;
-        let totalWallM2 = (totalPerimMm / 1000) * (hMm / 1000) * multiplier;
-        let mats = [];
-        if (baseWallType.value === 'alc75') mats.push({n:'ALC 75T', v:Math.ceil(totalWallM2/0.18), u:'장'});
-        if (baseWallType.value === 'alc100') mats.push({n:'ALC 100T', v:Math.ceil(totalWallM2/0.18), u:'장'});
-        if (baseWallType.value === 'stud') mats.push({n:'투바이포(3.6m)', v:Math.ceil(totalWallM2*2.5/3.6), u:'개'});
-        if (chkGypsum95.checked) mats.push({n:'일반석고 9.5T', v:Math.ceil(totalWallM2/1.62), u:'장'});
-        if (chkGypsum125.checked) mats.push({n:'차음석고 12.5T', v:Math.ceil(totalWallM2/1.62), u:'장'});
-        if (insulationType.value !== 'none') mats.push({n:insulationType.value==='glasswool'?'글라스울':'락울', v:Math.ceil(totalWallM2/0.45), u:'매'});
-
-        html += `<div class="material-card"><div class="material-title">총 물량 합계 ${multiplier==2?'(x2)':''}</div><div class="material-grid">`;
-        mats.forEach(m => html += `<div class="material-item"><div class="material-item-title">${m.n}</div><div class="material-item-value">${m.v}<span>${m.u}</span></div></div>`);
+        html += `<div class="material-card"><div class="material-title">총 물량 합계</div><div class="material-grid">`;
+        for(let k in totalMats) html += `<div class="material-item"><div class="material-item-title">${k}</div><div class="material-item-value">${totalMats[k].v}<span>${totalMats[k].u}</span></div></div>`;
         html += `</div></div>`;
         resultsArea.innerHTML = html;
     }
+
+    window.addEventListener('keydown', (e) => { if(e.key.toLowerCase()==='h') isHDown = true; });
+    window.addEventListener('keyup', (e) => { if(e.key.toLowerCase()==='h') isHDown = false; });
+    document.getElementById('btnClear').onclick = () => { if(confirm("초기화?")) { shapes=[]; updateResults(); draw(); } };
+    document.getElementById('btnFinish').onclick = () => { if(currentPoints.length > 1) { shapes.push({name:`Wall ${shapes.length+1}`, points:[...currentPoints], isClosed:false, color:'#2b2d42', lw:4, spec:{height:parseFloat(document.getElementById('wallHeight').value), doubleLeaf:document.getElementById('chkDoubleLeaf').checked, base:'none'}}); currentPoints=[]; updateResults(); draw(); } };
+
     resizeCanvas();
 </script>
 </body>
