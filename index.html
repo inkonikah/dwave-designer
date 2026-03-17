@@ -1,147 +1,191 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DWave Designer Pro - v7.0</title>
+    <title>DWave Designer v15.0 - Drawing & Logic</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: #1e1e1e; color: #fff; }
+        :root { --sidebar-bg: #1a1a1b; --panel-bg: #2d2d2e; --accent: #3498db; --text: #e0e0e0; }
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; background: #121212; color: var(--text); overflow: hidden; }
         
-        /* 왼쪽 설정창 */
-        .sidebar { width: 400px; padding: 25px; background: #2c2c2c; border-right: 1px solid #444; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+        /* 사이드바 설정 */
+        .sidebar { width: 380px; padding: 25px; background: var(--sidebar-bg); border-right: 1px solid #333; overflow-y: auto; z-index: 100; }
+        .sidebar h2 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
         
-        /* 오른쪽 결과창 */
-        .main { flex: 1; padding: 40px; background: #f5f5f5; color: #333; overflow-y: auto; }
-
-        h1 { color: #3498db; font-size: 24px; margin-bottom: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        h3 { font-size: 16px; margin-top: 25px; color: #ecf0f1; display: flex; align-items: center; }
-        .step-num { background: #3498db; color: #fff; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; }
-
-        .input-group { background: #383838; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 13px; color: #bbb; }
+        .input-group { background: var(--panel-bg); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #444; }
+        label { display: block; font-size: 12px; color: #888; margin-bottom: 8px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #fff; color: #000; font-weight: bold; box-sizing: border-box; margin-bottom: 10px; }
         
-        input[type=number], input[type=file], select { 
-            width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 5px; border: 1px solid #555; 
-            background: #fff; color: #000; font-weight: bold; box-sizing: border-box;
-        }
-
-        button#generate { 
-            width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; 
-            font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px;
-        }
-        button#generate:hover { background: #219150; transform: translateY(-2px); }
-
-        /* 결과물 디자인 */
-        .room-result { 
-            background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; 
-            border-left: 10px solid #3498db; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .room-name { font-size: 20px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
-        .mat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
-        .mat-item { background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px solid #eee; }
-        .mat-label { font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }
-        .mat-qty { font-size: 18px; font-weight: bold; color: #e67e22; }
+        /* 캔버스 영역 */
+        .canvas-container { flex: 1; position: relative; background: #222; overflow: auto; display: flex; align-items: flex-start; justify-content: flex-start; padding: 20px; }
+        canvas { background: #fff; cursor: crosshair; box-shadow: 0 0 30px rgba(0,0,0,0.5); transform-origin: top left; }
+        
+        /* 실시간 리포트 패널 */
+        .report-panel { position: absolute; top: 20px; right: 20px; width: 320px; background: rgba(255, 255, 255, 0.98); color: #333; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-top: 10px solid var(--accent); }
+        .report-panel h3 { margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px; font-size: 18px; }
+        .stat-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .val { font-weight: bold; color: #c0392b; font-size: 16px; }
+        
+        .btn-clear { width: 100%; padding: 12px; background: #e74c3c; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
-
 <body>
 
 <div class="sidebar">
-    <h1>DWave Designer</h1>
-
+    <h2>DWave Sketch</h2>
+    
     <div class="input-group">
-        <h3><span class="step-num">1</span>도면 업로드</h3>
-        <input type="file" id="blueprint">
+        <label>1. 도면 파일(JPG/PNG)</label>
+        <input type="file" id="loader" accept="image/*">
     </div>
 
     <div class="input-group">
-        <h3><span class="step-num">2</span>공통 높이 설정 (m)</h3>
-        <label>슬라브-슬라브 높이</label>
-        <input type="number" id="baseHeight" value="2.7" step="0.1">
+        <label>2. 실제 스케일 (100px 당 몇 m?)</label>
+        <input type="number" id="scale" value="1.0" step="0.1">
+        <label>3. 층고 설정 (H)</label>
+        <input type="number" id="wallH" value="2.7" step="0.1">
     </div>
 
     <div class="input-group">
-        <h3><span class="step-num">3</span>시공 방식 설정</h3>
+        <h3>시공 변수 설정</h3>
+        <label>ALC 시공</label>
+        <select id="alc_v">
+            <option value="1">싱글 (1회)</option>
+            <option value="2" selected>더블 (2회)</option>
+            <option value="0">미시공</option>
+        </select>
         
-        <label>ALC 시공 횟수</label>
-        <select id="alcMethod">
-            <option value="1">싱글 (한 번 돌리기)</option>
-            <option value="2">더블 (두 번 돌리기)</option>
-            <option value="0">ALC 제외</option>
-        </select>
+        <label>공기층(Air Gap) mm</label>
+        <input type="number" id="gap_v" value="50">
 
-        <label>차음 등급</label>
-        <select id="soundLevel">
-            <option value="1">일반 (생활 소음)</option>
-            <option value="2" selected>스튜디오 (표준 차음)</option>
-            <option value="3">프로 (드럼/악기실 등)</option>
-        </select>
-
-        <label>투바이 간격</label>
-        <select id="studSpacing">
-            <option value="450">450mm (표준)</option>
-            <option value="300">300mm (강화)</option>
+        <label>석고보드</label>
+        <select id="gyp_v">
+            <option value="1">일반석고 1P</option>
+            <option value="2" selected>일반석고 2P</option>
+            <option value="1.1">차음석고 1P</option>
+            <option value="2.2">차음석고 2P</option>
         </select>
     </div>
 
-    <div class="input-group">
-        <h3><span class="step-num">4</span>구성실 개수</h3>
-        <label>ADR Room</label> <input type="number" class="room-qty" value="1">
-        <label>Mixing Room</label> <input type="number" class="room-qty" value="1">
-        <label>Editing Room</label> <input type="number" class="room-qty" value="2">
-    </div>
-
-    <button id="generate">물량 산출 및 레이아웃 생성</button>
+    <button class="btn-clear" onclick="clearWalls()">그림 초기화</button>
+    <p style="font-size:11px; color:#666; margin-top:20px;">* 도면 위에서 마우스 왼쪽 클릭 후 드래그하여 벽체를 그리세요. 그려진 선의 길이에 따라 실시간 물량이 산출됩니다.</p>
 </div>
 
-<div class="main" id="layout">
-    <div style="text-align: center; margin-top: 150px; color: #bbb;">
-        <h2>STEP 1~4를 완료하고 버튼을 눌러주세요.</h2>
-        <p>현장 데이터 기반 자재 산출서가 이곳에 출력됩니다.</p>
+<div class="canvas-container">
+    <canvas id="canvas"></canvas>
+    
+    <div class="report-panel" id="report">
+        <h3>실시간 물량 리포트</h3>
+        <div id="summary">도면을 올리고 벽을 그리세요.</div>
+        <div id="details" style="margin-top:15px;"></div>
     </div>
 </div>
 
 <script>
-document.getElementById("generate").onclick = function() {
-    const h = parseFloat(document.getElementById("baseHeight").value);
-    const alc = parseInt(document.getElementById("alcMethod").value);
-    const sound = parseInt(document.getElementById("soundLevel").value);
-    const spacing = parseInt(document.getElementById("studSpacing").value);
-    
-    const qtys = document.querySelectorAll(".room-qty");
-    const roomNames = ["ADR", "MIX", "EDIT"];
-    
-    const layout = document.getElementById("layout");
-    layout.innerHTML = "<h1>현장 자재 산출 리포트</h1>";
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let img = new Image();
+    let walls = [];
+    let isDrawing = false;
+    let startX, startY;
 
-    roomNames.forEach((name, index) => {
-        const count = parseInt(qtys[index].value);
-        
-        for(let i=0; i < count; i++) {
-            // 임시 면적 계산 (도면 분석 전 가상 데이터: 4mx3m 기준)
-            const area = 12; 
-            const perimeter = 14; 
-            const wallArea = perimeter * h;
+    // 도면 업로드
+    document.getElementById('loader').onchange = function(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                redraw();
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
 
-            // 자재 산출 로직 적용
-            const alcQty = alc > 0 ? Math.ceil((wallArea / 0.24) * alc * 1.05) : 0;
-            const studQty = Math.ceil((perimeter / (spacing/1000)) * sound * 1.1);
-            const boardQty = Math.ceil((wallArea / 1.62) * sound * 2 * 1.05); // 양면 시공 기준
+    canvas.onmousedown = (e) => {
+        isDrawing = true;
+        startX = e.offsetX;
+        startY = e.offsetY;
+    };
 
-            const div = document.createElement("div");
-            div.className = "room-result";
-            div.innerHTML = `
-                <div class="room-name">${name} Room #${i+1}</div>
-                <div style="font-size: 13px; color: #666;">설정: 층고 ${h}m | ALC ${alc}회 | 차음등급 ${sound}</div>
-                <div class="mat-grid">
-                    <div class="mat-item"><div class="mat-label">ALC 블록</div><div class="mat-qty">${alcQty} 장</div></div>
-                    <div class="mat-item"><div class="mat-label">투바이 (3.6m)</div><div class="mat-qty">${studQty} 본</div></div>
-                    <div class="mat-item"><div class="mat-label">석고보드 (900*1800)</div><div class="mat-qty">${boardQty} 매</div></div>
-                    <div class="mat-item"><div class="mat-label">우레탄폼/본드</div><div class="mat-qty">약 ${Math.ceil(alcQty/20)} 개</div></div>
-                </div>
-            `;
-            layout.appendChild(div);
+    canvas.onmousemove = (e) => {
+        if (!isDrawing) return;
+        redraw();
+        drawTempLine(startX, startY, e.offsetX, e.offsetY);
+    };
+
+    canvas.onmouseup = (e) => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        const lengthPx = Math.sqrt(Math.pow(e.offsetX - startX, 2) + Math.pow(e.offsetY - startY, 2));
+        const mScale = parseFloat(document.getElementById('scale').value);
+        const lengthM = (lengthPx / 100) * mScale;
+
+        walls.push({ x1: startX, y1: startY, x2: e.offsetX, y2: e.offsetY, len: lengthM });
+        updateCalc();
+    };
+
+    function drawTempLine(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = '#3498db';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+    }
+
+    function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(img.src) ctx.drawImage(img, 0, 0);
+        walls.forEach(w => {
+            ctx.beginPath();
+            ctx.moveTo(w.x1, w.y1);
+            ctx.lineTo(w.x2, w.y2);
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+        });
+    }
+
+    function clearWalls() {
+        walls = [];
+        redraw();
+        updateCalc();
+    }
+
+    function updateCalc() {
+        const totalLen = walls.reduce((s, w) => s + w.len, 0);
+        const h = parseFloat(document.getElementById('wallH').value);
+        const alc = parseInt(document.getElementById('alc_v').value);
+        const gap = document.getElementById('gap_v').value;
+        const gyp = parseFloat(document.getElementById('gyp_v').value);
+        const area = totalLen * h;
+
+        const summary = document.getElementById('summary');
+        const details = document.getElementById('details');
+
+        if(totalLen === 0) {
+            summary.innerHTML = "도면 위에 벽을 그려주세요.";
+            details.innerHTML = "";
+            return;
         }
-    });
-}
+
+        summary.innerHTML = `
+            <div class="stat-row"><span>총 벽체 길이</span><span class="val">${totalLen.toFixed(2)}m</span></div>
+            <div class="stat-row"><span>벽체 면적(㎡)</span><span class="val">${area.toFixed(2)}㎡</span></div>
+        `;
+
+        // 자재 로직
+        const alcQty = alc > 0 ? Math.ceil((area / 0.24) * alc * 1.1) : 0;
+        const gypQty = Math.ceil((area / 1.62) * (gyp > 2 ? 2 : gyp) * 1.1); // 단순 겹수 로직
+        const studQty = Math.ceil((totalLen / 0.45 + 1) * 1.1);
+
+        details.innerHTML = `
+            <div class="stat-row"><span>ALC 블록 (${alc}회)</span><span class="val">${alcQty}장</span></div>
+            <div class="stat-row"><span>투바이 (450간격)</span><span class="val">${studQty}본</span></div>
+            <div class="stat-row"><span>석고보드 (할증포함)</span><span class="val">${gypQty}매</span></div>
+            <div style="font-size:11px; color:#e67e22; margin-top:10px;">* 설정된 공기층(${gap}mm) 기반 공간 분석 완료</div>
+        `;
+    }
 </script>
 
 </body>
