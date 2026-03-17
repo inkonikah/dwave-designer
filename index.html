@@ -3,111 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>자재 산출 특화 프리드로잉 툴</title>
+    <title>프리미엄 자재 산출 툴</title>
     <style>
-        body { margin: 0; padding: 0; display: flex; height: 100vh; font-family: 'Malgun Gothic', sans-serif; overflow: hidden; background-color: #e9ecef; }
-        #sidebar { width: 360px; background: #fff; padding: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 10; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; cursor: crosshair; background-color: #f8f9fa; }
-        canvas { display: block; }
-        /* 캔버스 모눈종이 배경 */
-        canvas.grid-bg { 
-            background-image: linear-gradient(#e0e0e0 1px, transparent 1px), linear-gradient(90deg, #e0e0e0 1px, transparent 1px); 
-            background-size: 20px 20px; 
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a0ca3;
+            --success: #2b9348;
+            --danger: #d90429;
+            --dark: #2b2d42;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e9ecef;
+            --text-main: #343a40;
+            --text-muted: #6c757d;
         }
-        h2, h3 { margin: 0; font-size: 16px; color: #333; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group label { font-size: 13px; font-weight: bold; color: #495057; }
-        .form-group input, .form-group select { padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; }
-        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 5px; }
-        button { padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; }
-        button:hover { background-color: #0056b3; }
-        button.active { background-color: #dc3545; }
-        button.success { background-color: #28a745; }
-        button.success:hover { background-color: #218838; }
-        button.secondary { background-color: #6c757d; }
-        button.secondary:hover { background-color: #5a6268; }
-        .btn-row { display: flex; gap: 5px; }
-        .btn-row button { flex: 1; }
-        .result-box { background: #f1f3f5; padding: 15px; border-radius: 6px; border: 1px solid #dee2e6; font-size: 14px; line-height: 1.6; color: #212529; }
-        hr { border: 0; border-top: 1px solid #dee2e6; margin: 5px 0; }
-        .shortcut-info { font-size: 12px; color: #495057; background: #e9ecef; padding: 10px; border-radius: 4px; line-height: 1.5; }
+
+        body { margin: 0; padding: 0; display: flex; height: 100vh; font-family: 'Pretendard', 'Malgun Gothic', sans-serif; overflow: hidden; background-color: #e0e4e8; color: var(--text-main); }
+        
+        /* 사이드바 스타일 개선 */
+        #sidebar { width: 400px; background: var(--card-bg); display: flex; flex-direction: column; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
+        .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid var(--border); background: var(--primary); color: white; }
+        .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+        
+        .sidebar-content { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar-content::-webkit-scrollbar { width: 6px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
+
+        /* 컨테이너 및 폼 요소 */
+        .section-box { background: var(--light-bg); border-radius: 10px; padding: 15px; border: 1px solid var(--border); }
+        .section-title { margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--dark); display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .form-group input[type="number"], .form-group select, .form-group input[type="file"] { 
+            padding: 9px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; outline: none; transition: border 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; }
+        .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-group label { cursor: pointer; }
+
+        /* 버튼 스타일 */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { padding: 10px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        button:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-primary.active { background-color: var(--danger); box-shadow: 0 0 0 3px rgba(217, 4, 41, 0.2); }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-outline { background-color: transparent; border: 1px solid #ced4da; color: var(--text-main); }
+        .btn-outline:hover { background-color: #e9ecef; }
+        .btn-full { width: 100%; margin-top: 5px; }
+
+        /* 결과 영역 (룸 리스트 & 자재 카드) */
+        .room-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .room-header { font-weight: bold; font-size: 14px; color: var(--primary); margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 5px; }
+        .room-data { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
+        
+        .material-card { background: #eef2fa; border: 1px solid #d7e3fc; border-radius: 8px; padding: 15px; margin-top: 15px; }
+        .material-title { font-size: 15px; font-weight: bold; color: var(--primary-hover); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .material-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .material-item { background: white; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; }
+        .material-item-title { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+        .material-item-value { font-size: 16px; font-weight: 800; color: var(--dark); }
+        .material-item-value span { font-size: 12px; font-weight: normal; margin-left: 2px; }
+
+        #scaleStatus { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #ffe3e3; color: var(--danger); font-size: 11px; font-weight: bold; margin-top: 5px; }
+        #scaleStatus.set { background: #d8f3dc; color: var(--success); }
+
+        .shortcut-box { background: var(--dark); color: rgba(255,255,255,0.8); font-size: 12px; padding: 12px 20px; line-height: 1.6; }
+        .shortcut-box b { color: white; }
+
+        /* 캔버스 영역 */
+        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background-color: #f1f3f5; cursor: crosshair; }
+        canvas { display: block; }
+        canvas.grid-bg { 
+            background-image: radial-gradient(#ced4da 1px, transparent 1px);
+            background-size: 30px 30px; 
+            background-position: -15px -15px;
+        }
     </style>
 </head>
 <body>
 
 <div id="sidebar">
-    <h2>📏 자재 산출 프리드로잉 툴</h2>
-    
-    <div class="form-group">
-        <label>1. 도면 불러오기 (선택)</label>
-        <input type="file" id="imageLoader" accept="image/*">
-    </div>
-
-    <div class="form-group">
-        <button id="btnCalibrate">2. 척도 설정 (실제 길이 지정)</button>
-        <span id="scaleStatus" style="font-size: 12px; color: #dc3545; font-weight: bold;">척도 미설정 (임시: 1px = 10mm)</span>
-    </div>
-
-    <hr>
-
-    <div class="form-group">
-        <label>3. 폴리라인 (벽체) 그리기</label>
-        <div class="btn-row">
-            <button id="btnDraw">선 그리기</button>
-            <button id="btnFinish" class="success">그리기 완료</button>
-        </div>
-        <div class="btn-row" style="margin-top: 5px;">
-            <button id="btnUndo" class="secondary">되돌리기(Undo)</button>
-            <button id="btnClear" class="secondary">전체 초기화</button>
-        </div>
-    </div>
-
-    <hr>
-    <h3>📦 자재 물량 세팅</h3>
-    <div class="form-group">
-        <label>벽 높이 (mm)</label>
-        <input type="number" id="wallHeight" value="2400" step="100">
-    </div>
-
-    <div class="form-group">
-        <label>기본 골조 (뼈대)</label>
-        <select id="baseWallType">
-            <option value="none">없음 (기존 벽체 활용)</option>
-            <option value="alc75">ALC 블록 75T</option>
-            <option value="alc100">ALC 블록 100T</option>
-            <option value="stud">목상 (투바이포 2x4)</option>
-        </select>
+    <div class="sidebar-header">
+        <h2>📐 프리미엄 자재 산출 툴</h2>
     </div>
     
-    <div class="form-group">
-        <label>마감재 및 충진재 선택</label>
-        <div class="checkbox-group">
-            <input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반 석고 9.5T (3x6)</label>
+    <div class="sidebar-content">
+        <div class="section-box">
+            <div class="section-title">1. 도면 및 척도 설정</div>
+            <div class="form-group">
+                <input type="file" id="imageLoader" accept="image/*">
+            </div>
+            <button id="btnCalibrate" class="btn-primary btn-full">척도 설정 (기준선 긋기)</button>
+            <div style="text-align: center;"><span id="scaleStatus">척도 미설정 (임시: 1px = 10mm)</span></div>
         </div>
-        <div class="checkbox-group">
-            <input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음 석고 12.5T (3x6)</label>
+
+        <div class="section-box">
+            <div class="section-title">2. 공간(벽체) 그리기</div>
+            <div class="btn-grid">
+                <button id="btnDraw" class="btn-primary">✏️ 선 그리기</button>
+                <button id="btnFinish" class="btn-success">✔️ 현재 선 완료</button>
+                <button id="btnUndo" class="btn-outline">↩️ 되돌리기</button>
+                <button id="btnFit" class="btn-outline">🔍 도면 맞춤</button>
+            </div>
+            <button id="btnClear" class="btn-outline btn-full" style="margin-top: 8px; color: var(--danger);">🗑️ 전체 도면 초기화</button>
         </div>
-        <div class="checkbox-group" style="margin-top: 5px;">
-            <select id="insulationType">
-                <option value="none">충진재 없음</option>
-                <option value="glasswool">글라스울 (450x1000)</option>
-                <option value="rockwool">락울 (450x1000)</option>
-            </select>
+
+        <div class="section-box">
+            <div class="section-title">3. 자재 스펙 설정</div>
+            <div class="form-group">
+                <label>벽 높이 (mm)</label>
+                <input type="number" id="wallHeight" value="2400" step="100">
+            </div>
+            <div class="form-group">
+                <label>기본 골조 (뼈대)</label>
+                <select id="baseWallType">
+                    <option value="none">없음 (기존 벽체)</option>
+                    <option value="alc75">ALC 블록 75T</option>
+                    <option value="alc100">ALC 블록 100T</option>
+                    <option value="stud">목상 (투바이포 2x4)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>마감 및 충진재</label>
+                <div class="checkbox-group"><input type="checkbox" id="chkGypsum95" checked> <label for="chkGypsum95">일반 석고 9.5T (3x6)</label></div>
+                <div class="checkbox-group"><input type="checkbox" id="chkGypsum125"> <label for="chkGypsum125">차음 석고 12.5T (3x6)</label></div>
+                <select id="insulationType" style="margin-top: 4px;">
+                    <option value="none">충진재 안 함</option>
+                    <option value="glasswool">글라스울 (450x1000)</option>
+                    <option value="rockwool">락울 (450x1000)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="resultsArea">
+            <div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">
+                도면을 그리면 이 곳에 공간별 내역과<br>총 자재 물량이 계산됩니다.
+            </div>
         </div>
     </div>
-
-    <hr>
-    <h3>📊 물량 산출 결과 (개수/장수)</h3>
-    <div id="results" class="result-box">
-        선을 그리고 완료를 눌러주세요.
-    </div>
-
-    <div class="shortcut-info">
-        <strong>[조작 단축키]</strong><br>
-        • 화면 이동: <b>H 키 누르고 마우스 드래그</b><br>
-        • 확대/축소: <b>마우스 휠</b><br>
-        • 직교 선긋기: <b>Shift 키 누르고 클릭</b><br>
-        • 실행 취소: <b>Ctrl + Z</b>
+    
+    <div class="shortcut-box">
+        <b>[조작 팁]</b><br>
+        • 화면 이동: <b>H</b> + 마우스 드래그<br>
+        • 직교 긋기: <b>Shift</b> + 클릭<br>
+        • 전역 스냅: <b>기존 꼭짓점 근처</b> 클릭 시 연결됨
     </div>
 </div>
 
@@ -125,9 +170,10 @@
     const btnDraw = document.getElementById('btnDraw');
     const btnFinish = document.getElementById('btnFinish');
     const btnUndo = document.getElementById('btnUndo');
+    const btnFit = document.getElementById('btnFit');
     const btnClear = document.getElementById('btnClear');
     const scaleStatus = document.getElementById('scaleStatus');
-    const resultsDiv = document.getElementById('results');
+    const resultsArea = document.getElementById('resultsArea');
 
     const wallHeightInput = document.getElementById('wallHeight');
     const baseWallType = document.getElementById('baseWallType');
@@ -137,9 +183,10 @@
 
     let image = null;
     let mode = 'idle'; 
-    let points = [];
+    let shapes = []; // { id: number, name: string, points: [], isClosed: boolean, isFinished: boolean }
     let calibPoints = [];
-    let isClosed = false;
+    let shapeCounter = 1;
+    
     let scale = 10; 
     let isScaleSet = false;
 
@@ -150,11 +197,12 @@
     let dragStartX = 0, dragStartY = 0;
     let isShiftDown = false;
     let mouseX = 0, mouseY = 0;
+    let snapPt = null; // 전역 스냅용 포인트
 
     function resizeCanvas() {
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
-        if(!image && panX === 0 && panY === 0) {
+        if(!image && shapes.length === 0 && panX === 0 && panY === 0) {
             panX = canvas.width / 2;
             panY = canvas.height / 2;
         }
@@ -180,42 +228,58 @@
     });
 
     window.addEventListener('keydown', (e) => {
-        if (e.key.toLowerCase() === 'h') {
-            isHDown = true;
-            canvas.style.cursor = 'grab';
-        }
+        if (e.key.toLowerCase() === 'h') { isHDown = true; canvas.style.cursor = 'grab'; }
         if (e.key === 'Shift') isShiftDown = true;
         if (e.ctrlKey && e.key.toLowerCase() === 'z') doUndo();
     });
 
     window.addEventListener('keyup', (e) => {
-        if (e.key.toLowerCase() === 'h') {
-            isHDown = false;
-            isDragging = false;
-            canvas.style.cursor = mode === 'draw' || mode === 'calibrate' ? 'crosshair' : 'default';
-        }
+        if (e.key.toLowerCase() === 'h') { isHDown = false; isDragging = false; canvas.style.cursor = mode === 'draw' ? 'crosshair' : 'default'; }
         if (e.key === 'Shift') isShiftDown = false;
     });
 
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (e.clientX - rect.left - panX) / zoom,
+            y: (e.clientY - rect.top - panY) / zoom
+        };
+    }
+
+    // 전역 스냅 포인트 찾기
+    function findGlobalSnap(x, y) {
+        let snapDist = 15 / zoom; 
+        for (let shape of shapes) {
+            for (let pt of shape.points) {
+                if (Math.hypot(x - pt.x, y - pt.y) < snapDist) {
+                    return {x: pt.x, y: pt.y};
+                }
+            }
+        }
+        return null;
+    }
+
     canvas.addEventListener('mousedown', (e) => {
         if (isHDown || e.button === 1) {
-            isDragging = true;
-            dragStartX = e.clientX - panX;
-            dragStartY = e.clientY - panY;
-            canvas.style.cursor = 'grabbing';
-            return;
+            isDragging = true; dragStartX = e.clientX - panX; dragStartY = e.clientY - panY;
+            canvas.style.cursor = 'grabbing'; return;
         }
 
         if (mode === 'idle') return;
 
-        const rect = canvas.getBoundingClientRect();
-        let x = (e.clientX - rect.left - panX) / zoom;
-        let y = (e.clientY - rect.top - panY) / zoom;
-
-        if (isShiftDown && points.length > 0 && mode === 'draw') {
-            const last = points[points.length - 1];
-            if (Math.abs(x - last.x) > Math.abs(y - last.y)) y = last.y;
-            else x = last.x;
+        let {x, y} = getMousePos(e);
+        
+        // 스냅 포인트가 활성화 되어있으면 무조건 거기로 덮어씌움
+        if (snapPt) {
+            x = snapPt.x;
+            y = snapPt.y;
+        } else if (isShiftDown && mode === 'draw' && shapes.length > 0) { // 직교 모드
+            let currentShape = shapes[shapes.length - 1];
+            if (!currentShape.isFinished && currentShape.points.length > 0) {
+                const last = currentShape.points[currentShape.points.length - 1];
+                if (Math.abs(x - last.x) > Math.abs(y - last.y)) y = last.y;
+                else x = last.x;
+            }
         }
 
         if (mode === 'calibrate') {
@@ -227,24 +291,28 @@
                     scale = parseFloat(actual) / pxDist;
                     isScaleSet = true;
                     scaleStatus.textContent = `척도 고정됨 (1px = ${scale.toFixed(2)}mm)`;
-                    scaleStatus.style.color = "#28a745";
+                    scaleStatus.className = 'set';
                 }
-                mode = 'idle';
-                calibPoints = [];
-                btnCalibrate.classList.remove('active');
-                updateResults();
+                mode = 'idle'; calibPoints = []; btnCalibrate.classList.remove('active'); updateResults();
             }
-        } else if (mode === 'draw' && !isClosed) {
-            if (points.length > 2) {
-                const dist = Math.hypot(x - points[0].x, y - points[0].y) * zoom;
-                if (dist < 15) { 
-                    isClosed = true;
-                    updateResults();
-                    draw();
-                    return;
+        } else if (mode === 'draw') {
+            let currentShape;
+            if (shapes.length === 0 || shapes[shapes.length - 1].isFinished) {
+                currentShape = { id: shapeCounter++, name: `공간 ${shapeCounter}`, points: [], isClosed: false, isFinished: false };
+                shapes.push(currentShape);
+            } else {
+                currentShape = shapes[shapes.length - 1];
+            }
+
+            // 도형 닫기 (자신의 첫점 스냅)
+            if (currentShape.points.length > 2) {
+                if (snapPt && snapPt.x === currentShape.points[0].x && snapPt.y === currentShape.points[0].y) { 
+                    currentShape.isClosed = true;
+                    currentShape.isFinished = true; 
+                    updateResults(); draw(); return;
                 }
             }
-            points.push({x, y});
+            currentShape.points.push({x, y});
             updateResults();
         }
         draw();
@@ -252,316 +320,254 @@
 
     canvas.addEventListener('mousemove', (e) => {
         if (isDragging) {
-            panX = e.clientX - dragStartX;
-            panY = e.clientY - dragStartY;
-            draw();
-            return;
+            panX = e.clientX - dragStartX; panY = e.clientY - dragStartY; draw(); return;
         }
 
-        const rect = canvas.getBoundingClientRect();
-        let x = (e.clientX - rect.left - panX) / zoom;
-        let y = (e.clientY - rect.top - panY) / zoom;
+        let {x, y} = getMousePos(e);
 
-        if (isShiftDown && points.length > 0 && mode === 'draw') {
-            const last = points[points.length - 1];
-            if (Math.abs(x - last.x) > Math.abs(y - last.y)) y = last.y;
-            else x = last.x;
+        // 스냅 확인
+        snapPt = mode === 'draw' ? findGlobalSnap(x, y) : null;
+
+        if (snapPt) {
+            mouseX = snapPt.x; mouseY = snapPt.y;
+        } else {
+            if (isShiftDown && mode === 'draw' && shapes.length > 0) {
+                let currentShape = shapes[shapes.length - 1];
+                if (!currentShape.isFinished && currentShape.points.length > 0) {
+                    const last = currentShape.points[currentShape.points.length - 1];
+                    if (Math.abs(x - last.x) > Math.abs(y - last.y)) y = last.y;
+                    else x = last.x;
+                }
+            }
+            mouseX = x; mouseY = y;
         }
-
-        mouseX = x;
-        mouseY = y;
         draw();
     });
 
-    canvas.addEventListener('mouseup', () => { 
-        isDragging = false; 
-        if(isHDown) canvas.style.cursor = 'grab';
-    });
+    canvas.addEventListener('mouseup', () => { isDragging = false; if(isHDown) canvas.style.cursor = 'grab'; });
     
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-
-        const wheel = e.deltaY < 0 ? 1 : -1;
-        let newZoom = zoom * Math.exp(wheel * 0.15);
-        if (newZoom < 0.05) newZoom = 0.05;
-        if (newZoom > 20) newZoom = 20;
-
-        panX = mx - (mx - panX) * (newZoom / zoom);
-        panY = my - (my - panY) * (newZoom / zoom);
-        zoom = newZoom;
-        
+        const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
+        let newZoom = zoom * Math.exp((e.deltaY < 0 ? 1 : -1) * 0.15);
+        if (newZoom < 0.15) newZoom = 0.15; if (newZoom > 20) newZoom = 20;
+        panX = mx - (mx - panX) * (newZoom / zoom); panY = my - (my - panY) * (newZoom / zoom); zoom = newZoom;
         draw();
     }, { passive: false });
 
-    btnCalibrate.addEventListener('click', () => {
-        mode = 'calibrate';
-        calibPoints = [];
-        btnCalibrate.classList.add('active');
-        btnDraw.classList.remove('active');
-        canvas.style.cursor = 'crosshair';
-    });
-
-    btnDraw.addEventListener('click', () => {
-        mode = 'draw';
-        isClosed = false;
-        btnDraw.classList.add('active');
-        btnCalibrate.classList.remove('active');
-        canvas.style.cursor = 'crosshair';
-    });
-
-    btnFinish.addEventListener('click', () => {
-        if (mode === 'draw') {
-            mode = 'idle';
-            btnDraw.classList.remove('active');
-            updateResults();
-            draw();
+    // 버튼 액션
+    btnFit.addEventListener('click', () => {
+        if (shapes.length === 0) { panX = canvas.width / 2; panY = canvas.height / 2; zoom = 1; draw(); return; }
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (let s of shapes) for (let pt of s.points) {
+            minX = Math.min(minX, pt.x); minY = Math.min(minY, pt.y);
+            maxX = Math.max(maxX, pt.x); maxY = Math.max(maxY, pt.y);
         }
+        let w = maxX - minX, h = maxY - minY;
+        if (w === 0 || h === 0) { panX = canvas.width / 2 - minX; panY = canvas.height / 2 - minY; zoom = 1; } 
+        else {
+            let scaleX = (canvas.width - 150) / w, scaleY = (canvas.height - 150) / h;
+            zoom = Math.min(scaleX, scaleY); if (zoom > 5) zoom = 5; if (zoom < 0.1) zoom = 0.1;
+            panX = canvas.width / 2 - (minX + w / 2) * zoom; panY = canvas.height / 2 - (minY + h / 2) * zoom;
+        }
+        draw();
     });
 
-    btnUndo.addEventListener('click', doUndo);
-
+    btnCalibrate.addEventListener('click', () => { mode = 'calibrate'; calibPoints = []; btnCalibrate.classList.add('active'); btnDraw.classList.remove('active'); canvas.style.cursor = 'crosshair'; });
+    btnDraw.addEventListener('click', () => { mode = 'draw'; btnDraw.classList.add('active'); btnCalibrate.classList.remove('active'); canvas.style.cursor = 'crosshair'; });
+    btnFinish.addEventListener('click', () => { if (mode === 'draw' && shapes.length > 0) { shapes[shapes.length - 1].isFinished = true; updateResults(); draw(); } });
+    
     function doUndo() {
-        if (points.length > 0) {
-            if (isClosed) isClosed = false;
-            else points.pop();
-            updateResults();
-            draw();
+        if (shapes.length > 0) {
+            let lastShape = shapes[shapes.length - 1];
+            if (lastShape.isClosed || lastShape.isFinished) {
+                lastShape.isClosed = false; lastShape.isFinished = false; mode = 'draw'; btnDraw.classList.add('active');
+            } else {
+                lastShape.points.pop(); if (lastShape.points.length === 0) { shapes.pop(); if(shapes.length > 0) shapeCounter = shapes[shapes.length-1].id + 1; else shapeCounter = 1; }
+            }
+            updateResults(); draw();
         }
     }
 
     btnClear.addEventListener('click', () => {
-        points = [];
-        calibPoints = [];
-        isClosed = false;
-        mode = 'idle';
-        btnDraw.classList.remove('active');
-        btnCalibrate.classList.remove('active');
-        resultsDiv.innerHTML = "선을 그리고 완료를 눌러주세요.";
-        draw();
+        shapes = []; calibPoints = []; mode = 'idle'; shapeCounter = 1;
+        btnDraw.classList.remove('active'); btnCalibrate.classList.remove('active');
+        panX = canvas.width / 2; panY = canvas.height / 2; zoom = 1;
+        updateResults(); draw();
     });
 
-    [wallHeightInput, baseWallType, chkGypsum95, chkGypsum125, insulationType].forEach(el => {
-        el.addEventListener('change', updateResults);
-    });
+    [wallHeightInput, baseWallType, chkGypsum95, chkGypsum125, insulationType].forEach(el => { el.addEventListener('change', updateResults); });
 
     function drawLineLabel(p1, p2, color) {
-        let dx = p2.x - p1.x;
-        let dy = p2.y - p1.y;
-        let distMm = Math.hypot(dx, dy) * scale;
-        
-        let midX = (p1.x + p2.x) / 2;
-        let midY = (p1.y + p2.y) / 2;
+        let dx = p2.x - p1.x; let dy = p2.y - p1.y; let distMm = Math.hypot(dx, dy) * scale;
+        let midX = (p1.x + p2.x) / 2; let midY = (p1.y + p2.y) / 2;
 
-        ctx.save();
-        ctx.translate(midX, midY);
-        
-        let angle = Math.atan2(dy, dx);
-        if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
-            angle += Math.PI;
-        }
+        ctx.save(); ctx.translate(midX, midY);
+        let angle = Math.atan2(dy, dx); if (angle > Math.PI / 2 || angle < -Math.PI / 2) angle += Math.PI;
         ctx.rotate(angle);
 
         let text = `${Math.round(distMm)} mm`;
-        let fontSize = 14 / zoom;
-        ctx.font = `bold ${fontSize}px 'Malgun Gothic', sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-
+        let fontSize = 12 / zoom;
+        ctx.font = `600 ${fontSize}px 'Pretendard', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
         let textWidth = ctx.measureText(text).width;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.fillRect(-textWidth/2 - 4/zoom, -fontSize - 6/zoom, textWidth + 8/zoom, fontSize + 8/zoom);
-
-        ctx.fillStyle = color;
-        ctx.fillText(text, 0, -4/zoom);
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.beginPath(); ctx.roundRect(-textWidth/2 - 5/zoom, -fontSize - 5/zoom, textWidth + 10/zoom, fontSize + 8/zoom, 4/zoom); ctx.fill();
+        ctx.fillStyle = color; ctx.fillText(text, 0, -3/zoom);
         ctx.restore();
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.save();
-        ctx.translate(panX, panY);
-        ctx.scale(zoom, zoom);
+        ctx.save(); ctx.translate(panX, panY); ctx.scale(zoom, zoom);
 
         if (image) ctx.drawImage(image, 0, 0);
 
         if (calibPoints.length > 0) {
-            ctx.strokeStyle = '#dc3545';
-            ctx.lineWidth = 2 / zoom;
-            ctx.beginPath();
-            ctx.arc(calibPoints[0].x, calibPoints[0].y, 4/zoom, 0, Math.PI*2);
-            ctx.fillStyle = '#dc3545';
-            ctx.fill();
-            if (mode === 'calibrate' && calibPoints.length === 1) {
-                ctx.moveTo(calibPoints[0].x, calibPoints[0].y);
-                ctx.lineTo(mouseX, mouseY);
-                ctx.stroke();
-            }
+            ctx.strokeStyle = '#dc3545'; ctx.lineWidth = 2 / zoom; ctx.beginPath(); ctx.arc(calibPoints[0].x, calibPoints[0].y, 4/zoom, 0, Math.PI*2); ctx.fillStyle = '#dc3545'; ctx.fill();
+            if (mode === 'calibrate' && calibPoints.length === 1) { ctx.moveTo(calibPoints[0].x, calibPoints[0].y); ctx.lineTo(mouseX, mouseY); ctx.stroke(); }
         }
 
-        if (points.length > 0) {
-            // 업로드하신 이미지 스타일 반영 (두꺼운 검은 선)
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 4 / zoom;
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
+        for (let shape of shapes) {
+            let pts = shape.points; if (pts.length === 0) continue;
 
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i].x, points[i].y);
-            }
+            // 라인 스타일
+            ctx.strokeStyle = '#2b2d42'; ctx.lineWidth = 3 / zoom; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
             
-            if (isClosed) {
-                ctx.lineTo(points[0].x, points[0].y);
-                // 업로드하신 이미지 스타일 반영 (연한 파란색 채우기)
-                ctx.fillStyle = 'rgba(204, 229, 255, 0.6)';
-                ctx.fill();
-            } else if (mode === 'draw') {
+            if (shape.isClosed) {
+                ctx.lineTo(pts[0].x, pts[0].y);
+                ctx.fillStyle = 'rgba(67, 97, 238, 0.1)'; ctx.fill();
+            } else if (mode === 'draw' && shape === shapes[shapes.length - 1] && !shape.isFinished) {
                 ctx.lineTo(mouseX, mouseY);
             }
             ctx.stroke();
 
-            // 선 위 치수(mm) 표시
-            for (let i = 0; i < points.length - 1; i++) {
-                drawLineLabel(points[i], points[i+1], '#000000');
-            }
-            if (isClosed) {
-                drawLineLabel(points[points.length-1], points[0], '#000000');
-            } else if (mode === 'draw') {
-                drawLineLabel(points[points.length-1], {x: mouseX, y: mouseY}, '#dc3545');
-            }
+            // 치수 텍스트
+            for (let i = 0; i < pts.length - 1; i++) drawLineLabel(pts[i], pts[i+1], '#2b2d42');
+            if (shape.isClosed) drawLineLabel(pts[pts.length-1], pts[0], '#2b2d42');
+            else if (mode === 'draw' && shape === shapes[shapes.length - 1] && !shape.isFinished) drawLineLabel(pts[pts.length-1], {x: mouseX, y: mouseY}, '#d90429');
 
-            // 업로드하신 이미지 스타일 반영 (흰색 바탕에 검은 테두리 꼭짓점)
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2 / zoom;
-            for (let pt of points) {
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, 5 / zoom, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-            }
+            // 꼭짓점 마커
+            ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2b2d42'; ctx.lineWidth = 1.5 / zoom;
+            for (let pt of pts) { ctx.beginPath(); ctx.arc(pt.x, pt.y, 4 / zoom, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
 
-            // 도형 닫히면 중앙에 면적 표시
-            if (isClosed && points.length > 2) {
-                let s1 = 0, s2 = 0;
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-                for (let i = 0; i < points.length; i++) {
-                    let j = (i + 1) % points.length;
-                    s1 += (points[i].x * scale) * (points[j].y * scale);
-                    s2 += (points[j].x * scale) * (points[i].y * scale);
-
-                    minX = Math.min(minX, points[i].x);
-                    minY = Math.min(minY, points[i].y);
-                    maxX = Math.max(maxX, points[i].x);
-                    maxY = Math.max(maxY, points[i].y);
+            // 중앙 말풍선 네임택
+            if (shape.isClosed && pts.length > 2) {
+                let s1 = 0, s2 = 0; let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                for (let i = 0; i < pts.length; i++) {
+                    let j = (i + 1) % pts.length;
+                    s1 += (pts[i].x * scale) * (pts[j].y * scale); s2 += (pts[j].x * scale) * (pts[i].y * scale);
+                    minX = Math.min(minX, pts[i].x); minY = Math.min(minY, pts[i].y);
+                    maxX = Math.max(maxX, pts[i].x); maxY = Math.max(maxY, pts[i].y);
                 }
-                
                 let areaSqM = (Math.abs(s1 - s2) / 2 / 1000000).toFixed(2);
                 let pyeong = (areaSqM * 0.3025).toFixed(2);
+                let cx = (minX + maxX) / 2; let cy = (minY + maxY) / 2;
 
-                let centerX = (minX + maxX) / 2;
-                let centerY = (minY + maxY) / 2;
-
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                let fontSizeTitle = 18 / zoom;
-                let fontSizeSub = 14 / zoom;
+                ctx.save(); ctx.translate(cx, cy);
+                let fT = 16 / zoom; let fS = 12 / zoom;
                 
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                ctx.beginPath();
-                ctx.roundRect(-60/zoom, -30/zoom, 120/zoom, 60/zoom, 8/zoom);
+                // 버블 형태
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.roundRect(-55/zoom, -35/zoom, 110/zoom, 70/zoom, 10/zoom);
+                ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 10/zoom; ctx.shadowOffsetY = 4/zoom;
                 ctx.fill();
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 1.5 / zoom;
-                ctx.stroke();
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#4361ee'; ctx.lineWidth = 2 / zoom; ctx.stroke();
 
-                ctx.fillStyle = '#000000';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.font = `bold ${fontSizeTitle}px 'Malgun Gothic', sans-serif`;
-                ctx.fillText(`${areaSqM} ㎡`, 0, -10/zoom);
-                
-                ctx.fillStyle = '#495057';
-                ctx.font = `${fontSizeSub}px 'Malgun Gothic', sans-serif`;
-                ctx.fillText(`(${pyeong} 평)`, 0, 12/zoom);
+                ctx.fillStyle = '#4361ee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = `bold ${12/zoom}px 'Pretendard', sans-serif`; ctx.fillText(shape.name, 0, -20/zoom);
+                ctx.fillStyle = '#2b2d42'; ctx.font = `800 ${fT}px 'Pretendard', sans-serif`; ctx.fillText(`${areaSqM} ㎡`, 0, 0);
+                ctx.fillStyle = '#6c757d'; ctx.font = `600 ${fS}px 'Pretendard', sans-serif`; ctx.fillText(`(${pyeong} 평)`, 0, 18/zoom);
                 ctx.restore();
             }
+        }
+
+        // 스냅 포인트 시각화 (빨간 원)
+        if (snapPt) {
+            ctx.beginPath(); ctx.arc(snapPt.x, snapPt.y, 7 / zoom, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(217, 4, 41, 0.4)'; ctx.fill();
+            ctx.strokeStyle = '#d90429'; ctx.lineWidth = 1.5 / zoom; ctx.stroke();
         }
 
         ctx.restore();
     }
 
     function updateResults() {
-        if (points.length < 1) {
-            resultsDiv.innerHTML = "선을 그리고 완료를 눌러주세요.";
+        if (shapes.length === 0 || (shapes.length === 1 && shapes[0].points.length < 2)) {
+            resultsArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">공간 그리기 및 자석 스냅 기능을 활용해<br>도면을 완성해 주세요.</div>`;
             return;
         }
 
-        let totalLenMm = 0;
-        for (let i = 0; i < points.length - 1; i++) {
-            totalLenMm += Math.hypot(points[i+1].x - points[i].x, points[i+1].y - points[i].y) * scale;
-        }
-        if (isClosed && points.length > 2) {
-            totalLenMm += Math.hypot(points[0].x - points[points.length-1].x, points[0].y - points[points.length-1].y) * scale;
+        let totalLenMm = 0; let totalAreaSqM = 0; let totalNodes = 0;
+        let html = `<div>`;
+
+        for (let shape of shapes) {
+            let pts = shape.points; if (pts.length < 2) continue;
+            let shapeLen = 0; totalNodes += pts.length;
+
+            for (let i = 0; i < pts.length - 1; i++) shapeLen += Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y) * scale;
+            let shapeArea = 0;
+            if (shape.isClosed && pts.length > 2) {
+                shapeLen += Math.hypot(pts[0].x - pts[pts.length-1].x, pts[0].y - pts[pts.length-1].y) * scale;
+                let s1 = 0, s2 = 0;
+                for (let i = 0; i < pts.length; i++) {
+                    let j = (i + 1) % pts.length;
+                    s1 += (pts[i].x * scale) * (pts[j].y * scale); s2 += (pts[j].x * scale) * (pts[i].y * scale);
+                }
+                shapeArea = (Math.abs(s1 - s2) / 2) / 1000000;
+                totalAreaSqM += shapeArea;
+            }
+            totalLenMm += shapeLen;
+
+            // 공간별 말풍선 리스트 UI
+            html += `
+                <div class="room-card">
+                    <div class="room-header">🏷️ ${shape.name} ${shape.isClosed ? '' : '<span style="color:#d90429;font-size:11px;">(미완성 벽체)</span>'}</div>
+                    <div class="room-data"><span>벽체 길이:</span> <b>${(shapeLen / 1000).toFixed(2)} m</b></div>
+                    ${shapeArea > 0 ? `<div class="room-data"><span>바닥 면적:</span> <b>${shapeArea.toFixed(2)} ㎡ (${(shapeArea * 0.3025).toFixed(2)}평)</b></div>` : ''}
+                </div>`;
         }
 
-        let lenM = (totalLenMm / 1000).toFixed(2);
-        let html = `<strong>총 벽체 길이:</strong> ${lenM} m<br>`;
-        
-        if (isClosed && points.length > 2) {
-            let s1 = 0, s2 = 0;
-            for (let i = 0; i < points.length; i++) {
-                let j = (i + 1) % points.length;
-                s1 += (points[i].x * scale) * (points[j].y * scale);
-                s2 += (points[j].x * scale) * (points[i].y * scale);
-            }
-            let areaSqM = (Math.abs(s1 - s2) / 2 / 1000000).toFixed(2);
-            let pyeong = (areaSqM * 0.3025).toFixed(2);
-            html += `<strong>바닥 면적:</strong> ${areaSqM} ㎡ (${pyeong} 평)<br>`;
-        }
-        
-        html += `<hr><strong>[자재 소요량 산출]</strong><br>`;
+        // 전체 자재 카드 UI
         let hMm = parseFloat(wallHeightInput.value) || 2400;
         let wallAreaM2 = (totalLenMm / 1000) * (hMm / 1000); 
-        
-        const gypArea = 1.62; 
-        const insArea = 0.45; 
-        const alcArea = 0.18; 
-
         let baseType = baseWallType.value;
-        if (baseType === 'alc75') {
-            html += `• ALC 75T: <b>${Math.ceil(wallAreaM2 / alcArea)}</b> 장<br>`;
-        } else if (baseType === 'alc100') {
-            html += `• ALC 100T: <b>${Math.ceil(wallAreaM2 / alcArea)}</b> 장<br>`;
-        } else if (baseType === 'stud') {
-            let studLenMm = (totalLenMm * 2) + ((Math.ceil(totalLenMm / 450) + points.length) * hMm);
-            html += `• 투바이포(3.6m): <b>${Math.ceil(studLenMm / 3600)}</b> 개<br>`;
+        
+        let materials = [];
+        if (baseType === 'alc75') materials.push({ name: 'ALC 75T', value: Math.ceil(wallAreaM2 / 0.18), unit: '장' });
+        else if (baseType === 'alc100') materials.push({ name: 'ALC 100T', value: Math.ceil(wallAreaM2 / 0.18), unit: '장' });
+        else if (baseType === 'stud') {
+            let studLenMm = (totalLenMm * 2) + ((Math.ceil(totalLenMm / 450) + totalNodes) * hMm);
+            materials.push({ name: '투바이포 (3.6m)', value: Math.ceil(studLenMm / 3600), unit: '개' });
         }
+        if (chkGypsum95.checked) materials.push({ name: '일반석고 9.5T', value: Math.ceil(wallAreaM2 / 1.62), unit: '장' });
+        if (chkGypsum125.checked) materials.push({ name: '차음석고 12.5T', value: Math.ceil(wallAreaM2 / 1.62), unit: '장' });
+        if (insulationType.value !== 'none') materials.push({ name: insulationType.options[insulationType.selectedIndex].text.split(' ')[0], value: Math.ceil(wallAreaM2 / 0.45), unit: '매' });
 
-        if (chkGypsum95.checked) html += `• 일반 석고 9.5T: <b>${Math.ceil(wallAreaM2 / gypArea)}</b> 장<br>`;
-        if (chkGypsum125.checked) html += `• 차음 석고 12.5T: <b>${Math.ceil(wallAreaM2 / gypArea)}</b> 장<br>`;
+        html += `<div class="material-card">
+            <div class="material-title">총 자재 소요량 합계</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">총 벽둘레: ${(totalLenMm/1000).toFixed(2)}m / 총 면적: ${totalAreaSqM.toFixed(2)}㎡</div>
+            <div class="material-grid">`;
+        
+        materials.forEach(m => {
+            html += `<div class="material-item">
+                <div class="material-item-title">${m.name}</div>
+                <div class="material-item-value">${m.value}<span>${m.unit}</span></div>
+            </div>`;
+        });
+        
+        html += `</div></div></div>`;
 
-        let ins = insulationType.value;
-        if (ins !== 'none') {
-            let name = ins === 'glasswool' ? '글라스울' : '락울';
-            html += `• ${name}: <b>${Math.ceil(wallAreaM2 / insArea)}</b> 매<br>`;
-        }
+        if (!isScaleSet) html += `<div style="text-align:center; margin-top:10px;"><span style="color:var(--danger); font-size:12px; font-weight:bold;">※ 척도를 먼저 설정해야 정확합니다.</span></div>`;
 
-        if (!isScaleSet) {
-            html += `<br><span style="color:#dc3545; font-size:12px;">※ 현재 척도가 고정되지 않았습니다. (임시비율 적용중) 먼저 <b>척도 설정</b>을 해주세요.</span>`;
-        }
-
-        resultsDiv.innerHTML = html;
+        resultsArea.innerHTML = html;
     }
 
     resizeCanvas();
-    setTimeout(resizeCanvas, 100);
 </script>
 </body>
 </html>
